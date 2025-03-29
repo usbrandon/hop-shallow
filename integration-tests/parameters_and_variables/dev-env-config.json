@@ -1,0 +1,15 @@
+{
+  "variables" : [ {
+    "name" : "sample-var2",
+    "value" : "ProvaDev2",
+    "description" : ""
+  }, {
+    "name" : "sample-var1",
+    "value" : "ProvaDev1",
+    "description" : ""
+  }, {
+    "name" : "TEST_0012",
+    "value" : "121212",
+    "description" : ""
+  } ]
+}

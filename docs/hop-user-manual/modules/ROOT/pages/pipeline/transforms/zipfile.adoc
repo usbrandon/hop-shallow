@@ -1,0 +1,60 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Zip File transform creates a standard ZIP archive using the options you specify in the dialog.
+
+= image:transforms/icons/zipfile.svg[Zip file transform Icon, role="image-doc-icon"] Zip file
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The Zip File transform creates a standard ZIP archive using the options you specify in the dialog.
+
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:question_mark.svg[Maybe Supported, 24]
+!Flink! image:question_mark.svg[Maybe Supported, 24]
+!Dataflow! image:question_mark.svg[Maybe Supported, 24]
+!===
+|===
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform.
+|Create target parent folder|Check this option to create the target parent folder if needed.
+|Overwrite target file|Check this option to overwrite the target file if it exists.
+|Add zip filename to result|Check this option to add the zip filename to the internal result set.
+|Source filename field|Define the field that contains the source filename. This is the file that gets added to the zip archive.
+|Target filename field|Define the field that contains the target zip filename. This file is created if it does not exist, or overwritten if you allow it.
+|Keep source folders|Check this option to keep the source folder in the zip file's name.
+|Base folder fieldname|If Keep source folders is selected, define a field that contains any additional folders the source folder is nested in, which will be removed from the file name when the zip file is created. This preserves only the name of the folder the file was in as part of the zip file name, such as 'outputs/result.zip'
+|After zip a|The action to take on the source file after zipping. Select one of the following:
+
+*Do nothing: The source file is left in the folder.
+*Move source file: Moves the source file to the location specified in the Move to folder fieldname box.
+*Delete source file: Deletes the source file from the folder.
+|Move to folder fieldname|Define the field that contains the target folder to move the source file to after zipping.
+|===

@@ -1,0 +1,77 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Beam Kinesis Produce transform sends data to a Kinesis stream using the Beam pipeline execution engine.
+
+= image:transforms/icons/beam-kinesis-produce.svg[Beam Kinesis Produce Icon, role="image-doc-icon"] Beam Kinesis Produce
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The Beam link:https://aws.amazon.com/kinesis/[Kinesis] Produce transform sends data (messages) to an Amazon Kinesis stream using a Beam pipeline execution engine.
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:cross.svg[Not Supported, 24]
+!Spark! image:check_mark.svg[Supported, 24]
+!Flink! image:check_mark.svg[Supported, 24]
+!Dataflow! image:check_mark.svg[Supported, 24]
+!===
+|===
+
+== Limitations
+
+The main limitation of the Kinesis produce transform is that it currently only supports sending String data.  Please create a request in GitHub if you want to see support for Avro messages and other formats.
+
+== Options
+
+[options="header"]
+|===
+
+|Option|Description
+
+|Transform name
+|Name of the transform, this name has to be unique in a single pipeline.
+
+|AWS access key
+|The Amazon Web Services access key to authenticate with.
+
+|AWS secret key
+|The Amazon Web Services secret key to authenticate with.
+
+|Stream name
+|The name of the Kinesis stream to write to.
+
+|The name of the data field to send
+|This is the name of the field that contains the actual data (message)
+
+|The type of data to send
+|Only String data (messages) are supported for now.
+
+|Partition key
+|The partition key to use
+
+|Configuration options
+|A list of configuration options. See https://github.com/awslabs/amazon-kinesis-producer/blob/master/java/amazon-kinesis-producer-sample/default_config.properties[here] for a list of examples.
+
+|===
+
+

@@ -1,0 +1,6 @@
+{
+  "variables" : [
+    { "name": "AZURE_ACCOUNT", "value": "<<<REPLACE_AZURE_ACCOUNT>>>" },
+    { "name": "AZURE_KEY", "value": "<<<REPLACE_AZURE_KEY>>>" }
+  ]
+}

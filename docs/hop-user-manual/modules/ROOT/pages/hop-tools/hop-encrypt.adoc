@@ -1,0 +1,158 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:description: Hop Encrypt is a command line tool to encrypt (obfuscate) passwords for use in XML, password or Hop metadata files.
+= Hop Encrypt
+
+Hop Encrypt is a command line tool to encrypt (obfuscate) passwords for use in XML, password or Hop metadata files.
+
+== Usage
+
+[source,bash]
+----
+hop-encrypt usage:
+
+  encr <-hop|-server> <password>
+  Options:
+    -hop: generate an obfuscated or encrypted password
+    -server : generate an obfuscated password to include in the hop-server password file 'pwd/hop.pwd'
+
+This command line tool obfuscates or encrypts a plain text password for use in XML, password or metadata files.
+Make sure to also copy the password encryption prefix to indicate the obfuscated nature of the password.
+Hop will then be able to make the distinction between regular plain text passwords and obfuscated ones.
+----
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|<password>|The password to obfuscate
+|-hop|generate an obfuscated or encrypted password
+|-server|generate an obfuscated password to include in the hop-server password file 'pwd/hop.pwd'
+|===
+
+== Examples
+
+=== Hop Example
+
+Encrypt (obfuscate) the password `abcd` for use in Hop workflows, pipelines and other metadata files.
+
+&nbsp; +
+
+[tabs]
+====
+Windows::
++
+--
+[source,shell]
+----
+hop-encrypt.bat -hop abcd
+----
+
+
+Expected output:
+
+[source,shell]
+----
+C:\<YOUR_PATH>\hop>echo off
+===[Environment Settings - hop-encrypt.bat]====================================
+Java identified as "C:\Program Files\Microsoft\jdk-11.0.17.8-hotspot\\bin\java"
+HOP_OPTIONS=-Xmx64m -DHOP_AUDIT_FOLDER=.\audit -DHOP_PLATFORM_OS=Windows -DHOP_PLATFORM_RUNTIME=GUI
+Command to start Hop will be:
+"C:\Program Files\Microsoft\jdk-11.0.17.8-hotspot\\bin\java" -classpath lib\core\*;lib\beam\*;lib\swt\win64\*
+-Djava.library.path=lib\core;lib\beam -Xmx64m -DHOP_AUDIT_FOLDER=.\audit -DHOP_PLATFORM_OS=Windows
+-DHOP_PLATFORM_RUNTIME=GUI org.apache.hop.core.encryption.Encr -hop abcd
+===[Starting HopEncrypt]=========================================================
+Encrypted 2be98afc86aa7f2e4cb79ce10df90acde
+----
+
+--
+
+Linux, macOS::
++
+--
+[source,shell]
+----
+./hop-encrypt.sh -hop abcd
+----
+
+Expected output:
+
+[source,shell]
+----
+Encrypted 2be98afc86aa7f2e4cb79ce10df90acde
+----
+
+--
+
+====
+
+
+
+
+=== Hop Server Example
+
+Encrypt (obfuscate) the password 'abcd' for use in Hop server.
+
+&nbsp; +
+
+[tabs]
+====
+Windows::
++
+--
+[source,shell]
+----
+hop-encrypt.bat -server abcd
+----
+
+Expected output:
+
+[source,shell]
+----
+C:\<YOUR_PATH>\hop>echo off
+===[Environment Settings - hop-encrypt.bat]====================================
+Java identified as "C:\Program Files\Microsoft\jdk-11.0.17.8-hotspot\\bin\java"
+HOP_OPTIONS=-Xmx64m -DHOP_AUDIT_FOLDER=.\audit -DHOP_PLATFORM_OS=Windows -DHOP_PLATFORM_RUNTIME=GUI
+Command to start Hop will be:
+"C:\Program Files\Microsoft\jdk-11.0.17.8-hotspot\\bin\java" -classpath lib\core\*;lib\beam\*;lib\swt\win64\*
+-Djava.library.path=lib\core;lib\beam -Xmx64m -DHOP_AUDIT_FOLDER=.\audit -DHOP_PLATFORM_OS=Windows
+-DHOP_PLATFORM_RUNTIME=GUI org.apache.hop.core.encryption.Encr -server abcd
+===[Starting HopEncrypt]=========================================================
+OBF:1s3g1s3i1s3k1s3m
+----
+
+--
+
+Linux, macOS::
++
+--
+[source,shell]
+----
+./hop-encrypt.sh -server abcd
+----
+
+Expected output:
+
+[source,shell]
+----
+OBF:1s3g1s3i1s3k1s3m
+----
+
+--
+====
+

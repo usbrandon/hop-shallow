@@ -1,0 +1,66 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The XML Join transform adds xml tags from one stream into a leading XML structure from a second stream.
+
+= image:transforms/icons/XJN.svg[XML Join transform Icon, role="image-doc-icon"] XML Join
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The XML Join transform adds XML tags from one stream into a leading XML structure from a second stream.
+
+The target stream must have only one row, since it represents an XML document. The other stream can consist of many rows, and the tags from all rows are added to the target document by the join.
+
+Only one row is produced after the join. This single row contains the fields of the target transform plus the result field of the join.
+
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:question_mark.svg[Maybe Supported, 24]
+!Flink! image:question_mark.svg[Maybe Supported, 24]
+!Dataflow! image:question_mark.svg[Maybe Supported, 24]
+!===
+|===
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform.
+|Target XML Transform|Transform that sends the target document to the join.
+|Target XML Field|Field that contains the XML structure.
+|Source XML Transform|Transform that send the XML structure(s) to the join that need to be added to the target.
+|Source XML Field|Field that contains the XML structures that get added to the target.
+|XPath Statement|An XPath statement used to find the node in the target document where the new tags start to be inserted.
+When the complex join is enabled, a single ? character is used as a placeholder.
+|Complex Join|Flag to enable the complex join syntax, using the placeholder in the XPath Statment
+|Join Comparison Field|Field that contains the values that get replaced in the XPath Statement
+|Result XML field|The field that will contain the result.
+|Encoding|Character encoding to be used in the XML Header and to transform the XML
+|Omit XML header|Whether the XML header is omitted from the output.
+The character encoding of the target XML is preserved regardless of whether the header is included.
+|Omit null values from XML|Whether null values are removed fro the output. If this option is not selected, null values are included in the XML output as an empty element, such as <abc/>.
+When this option is selected, the null values are completely omitted from the output and no empty elements exist.
+This is useful to save space in the output file (for high volume transactions) or to use the empty tags for special conditions in the output.
+|===

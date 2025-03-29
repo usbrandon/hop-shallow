@@ -1,0 +1,108 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Row Normaliser transform converts the columns of an input stream into rows.
+
+= image:transforms/icons/normaliser.svg[Row Normaliser transform Icon, role="image-doc-icon"] Row Normaliser
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The Row Normaliser transform converts the columns of an input stream into rows.
+
+You can use this transform to normalize repeating groups of columns.
+
+*Important*: When combining multiple columns with different meta types (e.g., String and Integer) into a new field, no automatic type conversion is performed. Instead the first meta type is set. This lack of conversion may lead to issues with subsequent transformations on the resulting data rows. It is strongly advised to ensure that the data types of values being put into the same field are aligned before normalization.
+
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:check_mark.svg[Supported, 24]
+!Flink! image:check_mark.svg[Supported, 24]
+!Dataflow! image:check_mark.svg[Supported, 24]
+!===
+|===
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform, this name has to be unique in a single pipeline.
+|Typefield|The name of the type field (**key** in the example below).
+|Fields table|
+A list of the fields you want to normalize; you must set the following properties for each selected field:
+
+* Fieldname: Name of the fields to normalize, as you get them from the input transform.
+* Type: Give a string to classify the field (you can use the same field names, or input custom strings).
+* New field: You can give one or more fields where the new value should transferred to (**value** in our example).
+|Get Fields|Click to retrieve a list of all fields coming in on the stream(s).
+|===
+
+== Example
+
+=== Input data
+
+[options="header"]
+|===
+|RecordID|FirstName|LastName|City
+|345-12-0000|Mitchel|Runolfsdottir|Jerryside
+|976-67-7113|Elden|Welch|Lake Jamaal
+|824-21-0000|Rory|Ledner|Scottieview
+|===
+
+=== Normalized data (example 1)
+Set **Typefield** = "key" and use the **Get Fields** button to load all the fields for normalization, set also **New field** = "value" in all rows. The result is:
+
+[options="header"]
+|===
+|key|value
+|RecordID|345-12-0000
+|FirstName|Mitchel
+|LastName|Runolfsdottir
+|City|Jerryside
+|RecordID|976-67-7113
+|FirstName|Elden
+|LastName|Welch
+|City|Lake Jamaal
+|RecordID|824-21-0000
+|FirstName|Rory
+|LastName|Ledner
+|City|Scottieview
+|===
+
+=== Normalized data (example 2)
+Similar to example 1, but remove the **RecordID** field from the **Fields table**. The result is:
+
+[options="header"]
+|===
+|RecordID|key|value
+|345-12-0000|FirstName|Mitchel
+|345-12-0000|LastName|Runolfsdottir
+|345-12-0000|City|Jerryside
+|976-67-7113|FirstName|Elden
+|976-67-7113|LastName|Welch
+|976-67-7113|City|Lake Jamaal
+|824-21-0000|FirstName|Rory
+|824-21-0000|LastName|Ledner
+|824-21-0000|City|Scottieview
+|===

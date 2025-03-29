@@ -1,0 +1,159 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:description: Building and setting up your own Hop Web environment is straightforward. The steps to set up the default Docker image are included in a helper script docker/create_hop_web_container.sh in the Hop code base. This should get you started to make modifications or create your own version entirely.
+:openvar: ${
+:closevar: }
+
+= Hop Web Development Guide
+
+== Building or customizing Hop Web
+
+Hop Web is available as a basic Docker container image from Docker Hub. Check the xref:manual::hop-gui/hop-web.adoc[user manual for Hop Web] for more information.
+
+Follow the steps in this guid to learn how you can build your own Hop Web installation or docker image.
+
+WARNING: Hop Web is built with https://eclipse.dev/rap/demos/[Eclipse RAP], and translates the default Hop Gui desktop application into a web version. It is functional, but there are limitations. Feel free to https://hop.apache.org/community/contributing/[contribute] if you'd like to improve Hop Web.
+
+== Build Hop
+
+Hop currently doesn't offer any standalone Hop Web builds.
+
+Running your own Hop Web environment is straightforward but requires you to build Hop. Follow the xref:setup-dev-environment.adoc[development environment setup] guide to get the Hop source code and build Hop.
+
+The steps to set up the default Docker image are included in a helper script `docker/create_hop_web_container.sh` in the Hop code base.
+This should get you started to make modifications or create your own version entirely.
+
+Additional info in xref:hopweb/developer-guide.adoc#_building_the_hop_web_docker_container[Building the Hop Web Docker container]
+
+== Tomcat Configuration
+
+=== Copy files
+
+We'll use Apache Tomcat in this example. If you use another application server, the process should be similar.
+
+Hop 2.x is built with Java 17, so you'll need to https://tomcat.apache.org/download-90.cgi[download the latest Tomcat 9].
+
+Copy or extract the following files from your Hop build, where `$CATALINA_HOME` is your Tomcat installation folder.
+
+[source,bash]
+----
+
+#unzip files for docker image
+unzip assemblies/web/target/hop.war -d $CATALINA_HOME/webapps/hop/
+unzip assemblies/plugins/dist/target/hop-assemblies-*.zip -d $CATALINA_HOME/
+----
+
+=== Modify startup script
+
+Configure Tomcat to run Hop by adding the information below to  `$CATALINA_HOME/bin/startup.sh`, anywhere before the last line (`exec "$PRGDIR"/"$EXECUTABLE" start "$@"`)
+
+[source,bash]
+----
+
+export HOP_AES_ENCODER_KEY=
+# specify where Hop should store audit information
+export HOP_AUDIT_FOLDER="${CATALINA_HOME}/webapps/hop/audit"
+# specify where Hop should manage configuration metadata (e.g. projects and environments information).
+export HOP_CONFIG_FOLDER="${CATALINA_HOME}/webapps/hop/config"
+# specify the hop log level
+export HOP_LOG_LEVEL="Basic"
+# any additional JRE settings you want to pass on
+#export HOP_OPTIONS=
+# default Hop password encoder plugin
+export HOP_PASSWORD_ENCODER_PLUGIN="Hop"
+# point Hop to the plugins folder
+export HOP_PLUGIN_BASE_FOLDERS="${CATALINA_HOME}/plugins"
+# path to jdbc drivers
+export HOP_SHARED_JDBC_FOLDERS=
+# the theme to use (dark or light)
+export HOP_WEB_THEME="light"
+
+# Set TOMCAT start variables
+export CATALINA_OPTS='${HOP_OPTIONS} -DHOP_AES_ENCODER_KEY="${HOP_AES_ENCODER_KEY}" -DHOP_AUDIT_FOLDER="${HOP_AUDIT_FOLDER}" -DHOP_CONFIG_FOLDER="${HOP_CONFIG_FOLDER}" -DHOP_LOG_LEVEL="${HOP_LOG_LEVEL}" -DHOP_PASSWORD_ENCODER_PLUGIN="${HOP_PASSWORD_ENCODER_PLUGIN}" -DHOP_PLUGIN_BASE_FOLDERS="${HOP_PLUGIN_BASE_FOLDERS}" -DHOP_SHARED_JDBC_FOLDERS="${HOP_SHARED_JDBC_FOLDERS}" -DHOP_WEB_THEME="${HOP_WEB_THEME}"'
+
+----
+
+=== Project settings
+
+If you want to run Hop Web with the `default` and `samples` projects, make sure the project root path in `hop-config.json` is set to `{openvar}HOP_CONFIG_FOLDER{closevar}.
+
+On Linux or Mac, use the following sed command to fix this in one line:
+
+`sed -i 's/config\/projects/{openvar}HOP_CONFIG_FOLDER{closevar}\/projects/g' webapps/hop/config/hop-config.json`
+
+On Windows, modify `hop-config.json` to make sure `projectsConf` looks like the one below:
+
+[source, json]
+----
+  "projectsConfig" : {
+    "enabled" : true,
+    "projectMandatory" : true,
+    "defaultProject" : "default",
+    "standardParentProject" : "default",
+    "projectConfigurations" : [ {
+      "projectName" : "default",
+      "projectHome" : "${HOP_CONFIG_FOLDER}/projects/default",
+      "configFilename" : "project-config.json"
+    }, {
+      "projectName" : "samples",
+      "projectHome" : "${HOP_CONFIG_FOLDER}/projects/samples",
+      "configFilename" : "project-config.json"
+    } ]
+  }
+
+----
+
+
+=== Script classpaths 
+
+To make sure all hop scripts are accessible and work correctly with Hop Web, update their classpaths: 
+
+This can be done with a couple of `sed` commands on Mac and Linux: 
+
+[source, bash]
+----
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-run.sh
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-conf.sh
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-search.sh
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-encrypt.sh
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-import.sh
+RUN  sed -i 's&lib/core/*&../../lib/*:WEB-INF/lib/*:lib/core/*&g' ${CATALINA_HOME}/webapps/ROOT/hop-search.sh
+----
+
+The `CLASSPATH` lines in the various scripts should look similar to the one below after editing: 
+
+`CLASSPATH="../../lib/*:WEB-INF/lib/*:lib/core/**:lib/beam/*:lib/swt/osx/arm64/*"`
+
+Once the classpaths have been updated, make sure to make the scripts executable: 
+
+`chmod +x {openvar}CATALINA_HOME{closevar}/webapps/ROOT/*.sh`
+
+
+=== Start Tomcat
+
+Run `bin/startup.sh` (Linux/Mac) or `bin/startup.bat` (Windows).
+
+Hop Web should only take a couple of seconds to start.
+
+Access through http://localhost:8080/hop/ui to test.
+
+image:hop-web.png[Hop Web, width="90%"]
+
+== Additional Guides
+
+* xref:hopweb/developer-guide.adoc[Developer Guide]
+* xref:hopweb/hopweb-antipatterns.adoc[Hop Web Antipatterns]

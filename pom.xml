@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache</groupId>
+        <artifactId>apache</artifactId>
+        <version>33</version>
+    </parent>
+
+    <groupId>org.apache.hop</groupId>
+    <artifactId>hop</artifactId>
+    <version>2.13.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Hop Orchestration Platform</name>
+    <description>Maven POM for the Hop Orchestration Platform</description>
+    <url>https://hop.apache.org</url>
+    <inceptionYear>2020</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>The Apache Hop Team</name>
+            <email>dev@hop.apache.org</email>
+            <url>https://hop.apache.org</url>
+            <organization>Apache Software Foundation</organization>
+            <organizationUrl>https://apache.org/</organizationUrl>
+        </developer>
+    </developers>
+
+    <mailingLists>
+        <mailingList>
+            <name>Development List</name>
+            <subscribe>dev-subscribe@hop.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@hop.apache.org</unsubscribe>
+            <post>dev@hop.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>User List</name>
+            <subscribe>users-subscribe@hop.apache.org</subscribe>
+            <unsubscribe>users-unsubscribe@hop.apache.org</unsubscribe>
+            <post>users@hop.apache.org</post>
+        </mailingList>
+        <mailingList>
+            <name>Commits List</name>
+            <subscribe>commits-subscribe@hop.apache.org</subscribe>
+            <unsubscribe>commits-unsubscribe@hop.apache.org</unsubscribe>
+            <post>commits@hop.apache.org</post>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/hop.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/hop.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://gitbox.apache.org/repos/asf?p=hop.git;a=summary</url>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/apache/hop/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Jenkins</system>
+        <url>https://builds.apache.org/job/Hop/</url>
+    </ciManagement>
+
+    <distributionManagement>
+        <site>
+            <id>apache.website</id>
+            <url>${site-repo-url}</url>
+        </site>
+    </distributionManagement>
+
+    <properties>
+        <apache-beam.version>2.59.0</apache-beam.version>
+        <assembly_appendId>false</assembly_appendId>
+        <assembly_package-phase>package</assembly_package-phase>
+        <attach-sources-phase>verify</attach-sources-phase>
+        <build.dependenciesDirectory>${project.build.directory}/dependency</build.dependenciesDirectory>
+        <byte-buddy.version>1.14.15</byte-buddy.version>
+        <cyclonedx-maven-plugin.version>2.8.1</cyclonedx-maven-plugin.version>
+        <hadoop.version>3.3.6</hadoop.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <jandex.version>3.2.2</jandex.version>
+        <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
+        <junit.version>5.10.2</junit.version>
+        <license.bundleLicenseFile>META-INF/LICENSE.txt</license.bundleLicenseFile>
+        <license.failOnLicenseCheck>false</license.failOnLicenseCheck>
+        <license.inceptionYear>2020</license.inceptionYear>
+        <license.licenseFile>LICENSE.txt</license.licenseFile>
+        <license.licenseName>apache_v2</license.licenseName>
+        <license.organizationName>Apache</license.organizationName>
+        <lombok.version>1.18.34</lombok.version>
+        <maven-failsafe-plugin.forkCount>1</maven-failsafe-plugin.forkCount>
+        <maven-failsafe-plugin.reuseForks>true</maven-failsafe-plugin.reuseForks>
+        <maven-surefire-plugin.argLine>-Duser.timezone=UTC
+            -Dfile.encoding=UTF-8
+            -Duser.language=en -Duser.country=US
+            --add-opens java.xml/jdk.xml.internal=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.lang.invoke=ALL-UNNAMED
+            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens java.base/java.io=ALL-UNNAMED
+            --add-opens java.base/java.net=ALL-UNNAMED
+            --add-opens java.base/java.nio=ALL-UNNAMED
+            --add-opens java.base/java.util=ALL-UNNAMED
+            --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens java.base/sun.nio.cs=ALL-UNNAMED
+            --add-opens java.base/sun.security.action=ALL-UNNAMED
+            --add-opens java.base/sun.util.calendar=ALL-UNNAMED
+            --add-opens java.security.jgss/sun.security.krb5=ALL-UNNAMED
+            --add-exports java.base/sun.nio.ch=ALL-UNNAMED</maven-surefire-plugin.argLine>
+        <maven-surefire-plugin.forkCount>1</maven-surefire-plugin.forkCount>
+        <maven-surefire-plugin.reuseForks>true</maven-surefire-plugin.reuseForks>
+        <maven-surefire-plugin.testFailureIgnore>false</maven-surefire-plugin.testFailureIgnore>
+        <maven.build.timestamp.format>yyyy-MM-dd hh.mm.ss</maven.build.timestamp.format>
+        <maven.compiler.source>${target.jdk.version}</maven.compiler.source>
+        <maven.compiler.target>${target.jdk.version}</maven.compiler.target>
+        <mockito-core.version>5.12.0</mockito-core.version>
+        <objenesis.version>3.4</objenesis.version>
+        <org.eclipse.platform.version>3.129.0</org.eclipse.platform.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <set-highest-basedir-phase>initialize</set-highest-basedir-phase>
+        <site-repo-url>scpexe://people.apache.org/www/hop.apache.org/maven/</site-repo-url>
+        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <target.jdk.version>17</target.jdk.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${jandex.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>java-hamcrest</artifactId>
+            <version>${java-hamcrest.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>${objenesis.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>apache.snapshots</id>
+            <url>https://repository.apache.org/snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.6.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.smallrye</groupId>
+                    <artifactId>jandex-maven-plugin</artifactId>
+                    <version>${jandex.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <arguments>-P=-assemblies,-assembly -DskipTests</arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>coverage-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*Dialog*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>coverage-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*Dialog*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <argLine>@{argLine} -Dfile.encoding=${project.build.sourceEncoding}
+                                ${maven-surefire-plugin.argLine}</argLine>
+                            <!-- this is set by jacoco's prepare-agent execution -->
+                            <forkCount>${maven-surefire-plugin.forkCount}</forkCount>
+                            <reuseForks>${maven-surefire-plugin.reuseForks}</reuseForks>
+                            <testFailureIgnore>${maven-surefire-plugin.testFailureIgnore}</testFailureIgnore>
+                            <properties>
+                                <includeTags>junit5</includeTags>
+                            </properties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludeSubProjects>false</excludeSubProjects>
+                    <consoleOutput>true</consoleOutput>
+                    <excludes>
+
+                        <!-- General Exclusions -->
+                        <exclude>DISCLAIMER</exclude>
+                        <exclude>LICENSE</exclude>
+                        <exclude>NOTICE</exclude>
+                        <exclude>**/licenses/*</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/*.svg</exclude>
+                        <exclude>**/*.json</exclude>
+                        <exclude>**/hop.pwd</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>.dockerignore</exclude>
+
+                        <!-- Unit Test Exclusions -->
+                        <exclude>**/test/**/*.txt</exclude>
+                        <exclude>**/test/**/*.xml</exclude>
+                        <exclude>**/test/**/*.xsd</exclude>
+                        <exclude>**/test/**/*.csv</exclude>
+                        <exclude>**/test/**/*.csv.bz2</exclude>
+                        <exclude>**/test/**/*.csv.gz</exclude>
+                        <exclude>**/test/**/*.ods</exclude>
+                        <exclude>**/test/**/*.xls</exclude>
+                        <exclude>**/test/**/*.xlsx</exclude>
+                        <exclude>**/test/**/*.edi</exclude>
+                        <exclude>**/test/**/*.avro</exclude>
+                        <exclude>**/test/**/*.snippet</exclude>
+
+                        <!-- Integration Test Exclusion -->
+                        <exclude>**/datasets/*.csv</exclude>
+                        <exclude>**/it/**/*.csv</exclude>
+
+                        <!-- External Integration Test Exclusion -->
+                        <exclude>**/integration-tests/**/*.txt</exclude>
+                        <exclude>**/integration-tests/**/*.csv</exclude>
+                        <exclude>**/integration-tests/**/*.avro</exclude>
+                        <exclude>**/integration-tests/**/*.xls</exclude>
+                        <exclude>**/integration-tests/**/*.xlsx</exclude>
+                        <exclude>**/integration-tests/**/*.json</exclude>
+                        <exclude>**/integration-tests/**/*.json.old</exclude>
+                        <exclude>**/integration-tests/**/*.edi</exclude>
+
+                        <!-- Samples Exclusions -->
+                        <!-- plugins/engines/beam -->
+                        <exclude>**/src/main/samples/**/*.txt</exclude>
+                        <exclude>**/src/main/samples/**/*.csv</exclude>
+
+                        <!-- Documentation Exclusions-->
+                        <exclude>docs/content/**</exclude>
+                        <exclude>docs/resources/**</exclude>
+                        <exclude>docs/node_modules/**</exclude>
+                        <exclude>docs/.pnp/**</exclude>
+                        <exclude>docs/.pnp.js</exclude>
+                        <exclude>docs/yarn.lock</exclude>
+
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <configLocation>/tools/maven/checkstyle.xml</configLocation>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <failOnViolation>true</failOnViolation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.43.0</version>
+                <configuration>
+                    <java>
+                        <includes>
+                            <include>src/**/*.java</include>
+                        </includes>
+                        <googleJavaFormat></googleJavaFormat>
+                        <importOrder></importOrder>
+                        <removeUnusedImports></removeUnusedImports>
+                    </java>
+                    <pom>
+                        <includes>
+                            <include>pom.xml</include>
+                        </includes>
+                        <sortPom>
+                            <nrOfIndentSpace>4</nrOfIndentSpace>
+                            <sortProperties>true</sortProperties>
+                            <sortModules>true</sortModules>
+                            <sortExecutions>true</sortExecutions>
+                            <sortDependencies>scope,groupId,artifactId</sortDependencies>
+                            <sortDependencyExclusions>scope,groupId,artifactId</sortDependencyExclusions>
+                        </sortPom>
+                    </pom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotless-format</id>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <show>public</show>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>aggregate</id>
+                        <reports>
+                            <report>aggregate-no-fork</report>
+                            <report>test-aggregate-no-fork</report>
+                        </reports>
+                        <inherited>false</inherited>
+                    </reportSet>
+                    <reportSet>
+                        <id>default</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <profiles>
+        <profile>
+            <id>base</id>
+            <activation>
+                <property>
+                    <name>base</name>
+                    <value>!false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>engine</module>
+                <module>engine-beam</module>
+                <module>lib</module>
+                <module>lib-jdbc</module>
+                <module>plugins</module>
+                <module>rap</module>
+                <module>rcp</module>
+                <module>rest</module>
+                <module>ui</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>assemblies</id>
+            <activation>
+                <property>
+                    <name>assemblies</name>
+                    <value>!false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>assemblies</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>assembly</id>
+            <activation>
+                <property>
+                    <name>assemblies</name>
+                    <value>!false</value>
+                </property>
+                <file>
+                    <exists>${basedir}/src/assembly/assembly.xml</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>assembly_package</id>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <phase>${assembly_package-phase}</phase>
+                                <configuration>
+                                    <descriptorSourceDirectory>${basedir}/src/assembly</descriptorSourceDirectory>
+                                    <appendAssemblyId>${assembly_appendId}</appendAssemblyId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>filtered-resources</id>
+            <activation>
+                <file>
+                    <exists>${basedir}/src/main/resources-filtered</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-filtered-resources</id>
+                                <goals>
+                                    <goal>add-resource</goal>
+                                </goals>
+                                <configuration>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/main/resources-filtered</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>swt-unix</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <env>linux</env>
+                <swt.artifactId>org.eclipse.swt.gtk.linux.x86_64</swt.artifactId>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>swt-mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <env>mac</env>
+                <swt.artifactId>org.eclipse.swt.cocoa.macosx.x86_64</swt.artifactId>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <id>apache-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.cyclonedx</groupId>
+                        <artifactId>cyclonedx-maven-plugin</artifactId>
+                        <version>${cyclonedx-maven-plugin.version}</version>
+                        <configuration>
+                            <projectType>library</projectType>
+                            <schemaVersion>1.5</schemaVersion>
+                            <includeBomSerialNumber>true</includeBomSerialNumber>
+                            <includeCompileScope>true</includeCompileScope>
+                            <includeProvidedScope>true</includeProvidedScope>
+                            <includeRuntimeScope>true</includeRuntimeScope>
+                            <includeSystemScope>true</includeSystemScope>
+                            <includeTestScope>false</includeTestScope>
+                            <includeLicenseText>false</includeLicenseText>
+                            <outputReactorProjects>true</outputReactorProjects>
+                            <outputFormat>json</outputFormat>
+                            <outputName>bom</outputName>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <verbose>false</verbose>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>makeAggregateBom</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>swt-windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <env>windows</env>
+                <swt.artifactId>org.eclipse.swt.win32.win32.x86_64</swt.artifactId>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.eclipse.platform</groupId>
+                        <artifactId>${swt.artifactId}</artifactId>
+                        <version>${org.eclipse.platform.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>*</groupId>
+                                <artifactId>*</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+        <profile>
+            <!--
+           This profile is used to deploy all the artifacts in the
+           'local-snapshots-dir' to Apache's SNAPSHOT repo.
+            -->
+            <id>deploy-snapshots</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>wagon-maven-plugin</artifactId>
+                        <configuration>
+                            <fromDir>${project.basedir}/local-snapshots-dir</fromDir>
+                            <includes>**</includes>
+                            <excludes>**/hop-assemblies*/**</excludes>
+                            <excludes>hop-plugins/**.zip</excludes>
+                            <excludes>hop-core/**.zip</excludes>
+                            <excludes>hop-engine/**.zip</excludes>
+                            <excludes>hop-engine-beam/**.zip</excludes>
+                            <excludes>hop-ui-rap/**.zip</excludes>
+                            <excludes>hop-ui-rcp/**.zip</excludes>
+                            <excludes>hop-rest/**.zip</excludes>
+                            <excludes>hop-ui/**.zip</excludes>
+                            <serverId>apache.snapshots.https</serverId>
+                            <url>${distMgmtSnapshotsUrl}</url>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

@@ -1,0 +1,890 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hop.pipeline.transforms.terafast;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.hop.core.Const;
+import org.apache.hop.core.SourceToTargetMapping;
+import org.apache.hop.core.database.DatabaseMeta;
+import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.row.IRowMeta;
+import org.apache.hop.core.row.IValueMeta;
+import org.apache.hop.core.util.IPluginProperty;
+import org.apache.hop.core.util.KeyValue;
+import org.apache.hop.core.variables.IVariables;
+import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.pipeline.PipelineMeta;
+import org.apache.hop.pipeline.transform.ITransformDialog;
+import org.apache.hop.pipeline.transform.TransformMeta;
+import org.apache.hop.ui.core.ConstUi;
+import org.apache.hop.ui.core.PropsUi;
+import org.apache.hop.ui.core.SimpleFileSelection;
+import org.apache.hop.ui.core.dialog.BaseDialog;
+import org.apache.hop.ui.core.dialog.EnterMappingDialog;
+import org.apache.hop.ui.core.dialog.ErrorDialog;
+import org.apache.hop.ui.core.widget.ColumnInfo;
+import org.apache.hop.ui.core.widget.MetaSelectionLine;
+import org.apache.hop.ui.core.widget.PluginWidgetFactory;
+import org.apache.hop.ui.core.widget.TableView;
+import org.apache.hop.ui.core.widget.TextVar;
+import org.apache.hop.ui.pipeline.transform.BaseTransformDialog;
+import org.apache.hop.ui.pipeline.transform.ITableItemInsertListener;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TableItem;
+
+public class TeraFastDialog extends BaseTransformDialog {
+
+  private static final Class<?> PKG = TeraFastMeta.class;
+
+  private static final int FORM_ATTACHMENT_OFFSET = 100;
+
+  private static final int FORM_ATTACHMENT_FACTOR = -15;
+  public static final String CONST_TERA_FAST_DIALOG_BROWSE_BUTTON = "TeraFastDialog.Browse.Button";
+
+  private final TeraFastMeta meta;
+
+  private MetaSelectionLine<DatabaseMeta> wConnection;
+
+  private TextVar wTable;
+
+  private TextVar wFastLoadPath;
+
+  private Button wbFastLoadPath;
+
+  private TextVar wControlFile;
+
+  private Button wbControlFile;
+
+  private TextVar wDataFile;
+
+  private Button wbDataFile;
+
+  private Button wbLogFile;
+
+  private TextVar wLogFile;
+
+  private TextVar wErrLimit;
+
+  private TextVar wSessions;
+
+  private Button wUseControlFile;
+
+  private Button wVariableSubstitution;
+
+  private Button wbTruncateTable;
+
+  private TableView wReturn;
+
+  private Button wGetLU;
+
+  private Button wDoMapping;
+
+  private ColumnInfo[] ciReturn;
+
+  private final List<String> inputFields = new ArrayList<>();
+
+  /** List of ColumnInfo that should have the field names of the selected database table. */
+  private final List<ColumnInfo> tableFieldColumns = new ArrayList<>();
+
+  /**
+   * Constructor.
+   *
+   * @param parent parent shell.
+   * @param variables transform meta
+   * @param pipelineMeta transaction meta
+   * @param transformMeta name of transform.
+   */
+  public TeraFastDialog(
+      final Shell parent,
+      IVariables variables,
+      final TeraFastMeta transformMeta,
+      final PipelineMeta pipelineMeta) {
+    super(parent, variables, transformMeta, pipelineMeta);
+    this.meta = transformMeta;
+  }
+
+  /**
+   * @param property property.
+   * @param textVar text varibale.
+   */
+  public static void setTextIfPropertyValue(final IPluginProperty property, final TextVar textVar) {
+    if (property.evaluate()) {
+      textVar.setText(((KeyValue<?>) property).stringValue());
+    }
+  }
+
+  /**
+   * @param property property.
+   * @param combo text variable.
+   */
+  public static void setTextIfPropertyValue(final IPluginProperty property, final CCombo combo) {
+    if (property.evaluate()) {
+      combo.setText(((KeyValue<?>) property).stringValue());
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see ITransformDialog#open()
+   */
+  @Override
+  public String open() {
+    this.changed = this.meta.hasChanged();
+    final Shell parent = getParent();
+
+    this.shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
+    PropsUi.setLook(this.shell);
+    setShellImage(this.shell, this.meta);
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = PropsUi.getFormMargin();
+    formLayout.marginHeight = PropsUi.getFormMargin();
+
+    this.shell.setLayout(formLayout);
+    this.shell.setText(BaseMessages.getString(PKG, "TeraFastDialog.Shell.Title"));
+
+    buildUi();
+    listeners();
+
+    //
+    // Search the fields in the background
+    //
+
+    final Runnable runnable =
+        () -> {
+          final TransformMeta transformMetaSearchFields =
+              TeraFastDialog.this.pipelineMeta.findTransform(TeraFastDialog.this.transformName);
+          if (transformMetaSearchFields == null) {
+            return;
+          }
+          try {
+            final IRowMeta row =
+                TeraFastDialog.this.pipelineMeta.getPrevTransformFields(
+                    variables, transformMetaSearchFields);
+
+            // Remember these fields...
+            for (int i = 0; i < row.size(); i++) {
+              inputFields.add(row.getValueMeta(i).getName());
+            }
+
+            setComboBoxes();
+          } catch (HopException e) {
+            TeraFastDialog.this.logError(
+                BaseMessages.getString(PKG, "System.Dialog.GetFieldsFailed.Message"));
+          }
+        };
+    new Thread(runnable).start();
+
+    getData();
+    this.meta.setChanged(this.changed);
+    disableInputs();
+
+    BaseDialog.defaultShellHandling(shell, c -> ok(), c -> cancel());
+
+    return this.transformName;
+  }
+
+  /** ... */
+  protected void setComboBoxes() {
+    // Something was changed in the row.
+    //
+    String[] fieldNames = ConstUi.sortFieldNames(inputFields);
+    // return fields
+    this.ciReturn[1].setComboValues(fieldNames);
+  }
+
+  /** Set data values in dialog. */
+  public void getData() {
+    setTextIfPropertyValue(this.meta.getFastloadPath(), this.wFastLoadPath);
+    setTextIfPropertyValue(this.meta.getControlFile(), this.wControlFile);
+    setTextIfPropertyValue(this.meta.getDataFile(), this.wDataFile);
+    setTextIfPropertyValue(this.meta.getLogFile(), this.wLogFile);
+    setTextIfPropertyValue(this.meta.getTargetTable(), this.wTable);
+    setTextIfPropertyValue(this.meta.getErrorLimit(), this.wErrLimit);
+    setTextIfPropertyValue(this.meta.getSessions(), this.wSessions);
+    setTextIfPropertyValue(this.meta.getConnectionName(), this.wConnection.getComboWidget());
+    this.wbTruncateTable.setSelection(this.meta.getTruncateTable().getValue());
+    this.wUseControlFile.setSelection(this.meta.getUseControlFile().getValue());
+    this.wVariableSubstitution.setSelection(this.meta.getVariableSubstitution().getValue());
+
+    if (this.meta.getTableFieldList().getValue().size()
+        == this.meta.getStreamFieldList().getValue().size()) {
+      for (int i = 0; i < this.meta.getTableFieldList().getValue().size(); i++) {
+        TableItem item = this.wReturn.table.getItem(i);
+        item.setText(1, this.meta.getTableFieldList().getValue().get(i));
+        item.setText(2, this.meta.getStreamFieldList().getValue().get(i));
+      }
+    }
+    if (this.meta.getDbMeta() != null) {
+      this.wConnection.setText(this.meta.getConnectionName().getValue());
+    }
+    setTableFieldCombo();
+
+    wTransformName.selectAll();
+    wTransformName.setFocus();
+  }
+
+  /** Configure listeners. */
+  private void listeners() {
+    this.wCancel.addListener(SWT.Selection, e -> cancel());
+    this.wOk.addListener(SWT.Selection, event -> ok());
+    this.wGetLU.addListener(SWT.Selection, event -> getUpdate());
+    final String allFileTypes = BaseMessages.getString(PKG, "TeraFastDialog.Filetype.All");
+    this.wbControlFile.addSelectionListener(
+        new SimpleFileSelection(this.shell, this.wControlFile, allFileTypes));
+    this.wbDataFile.addSelectionListener(
+        new SimpleFileSelection(this.shell, this.wDataFile, allFileTypes));
+    this.wbFastLoadPath.addSelectionListener(
+        new SimpleFileSelection(this.shell, this.wFastLoadPath, allFileTypes));
+    this.wbLogFile.addSelectionListener(
+        new SimpleFileSelection(this.shell, this.wLogFile, allFileTypes));
+
+    this.wDoMapping.addListener(SWT.Selection, event -> generateMappings());
+  }
+
+  /**
+   * Reads in the fields from the previous transforms and from the ONE next transform and opens an
+   * EnterMappingDialog with this information. After the user did the mapping, those information is
+   * put into the Select/Rename table.
+   */
+  public void generateMappings() {
+
+    // Determine the source and target fields...
+    //
+    IRowMeta sourceFields;
+    IRowMeta targetFields;
+
+    try {
+      sourceFields = this.pipelineMeta.getPrevTransformFields(variables, this.transformMeta);
+    } catch (HopException e) {
+      new ErrorDialog(
+          this.shell,
+          BaseMessages.getString(PKG, "TeraFastDialog.DoMapping.UnableToFindSourceFields.Title"),
+          BaseMessages.getString(PKG, "TeraFastDialog.DoMapping.UnableToFindSourceFields.Message"),
+          e);
+      return;
+    }
+    // refresh fields
+    this.meta.getTargetTable().setValue(this.wTable.getText());
+    try {
+      targetFields = this.meta.getRequiredFields(variables);
+    } catch (HopException e) {
+      new ErrorDialog(
+          this.shell,
+          BaseMessages.getString(PKG, "TeraFastDialog.DoMapping.UnableToFindTargetFields.Title"),
+          BaseMessages.getString(PKG, "TeraFastDialog.DoMapping.UnableToFindTargetFields.Message"),
+          e);
+      return;
+    }
+
+    String[] inputNames = new String[sourceFields.size()];
+    for (int i = 0; i < sourceFields.size(); i++) {
+      IValueMeta value = sourceFields.getValueMeta(i);
+      inputNames[i] = value.getName();
+    }
+
+    // Create the existing mapping list...
+    //
+    List<SourceToTargetMapping> mappings = new ArrayList<>();
+    StringBuilder missingSourceFields = new StringBuilder();
+    StringBuilder missingTargetFields = new StringBuilder();
+
+    int nrFields = this.wReturn.nrNonEmpty();
+    for (int i = 0; i < nrFields; i++) {
+      TableItem item = this.wReturn.getNonEmpty(i);
+      String source = item.getText(2);
+      String target = item.getText(1);
+
+      int sourceIndex = sourceFields.indexOfValue(source);
+      if (sourceIndex < 0) {
+        missingSourceFields.append(Const.CR + "   " + source + " --> " + target);
+      }
+      int targetIndex = targetFields.indexOfValue(target);
+      if (targetIndex < 0) {
+        missingTargetFields.append(Const.CR + "   " + source + " --> " + target);
+      }
+      if (sourceIndex < 0 || targetIndex < 0) {
+        continue;
+      }
+
+      SourceToTargetMapping mapping = new SourceToTargetMapping(sourceIndex, targetIndex);
+      mappings.add(mapping);
+    }
+
+    EnterMappingDialog d =
+        new EnterMappingDialog(
+            TeraFastDialog.this.shell,
+            sourceFields.getFieldNames(),
+            targetFields.getFieldNames(),
+            mappings);
+    mappings = d.open();
+
+    // mappings == null if the user pressed cancel
+    //
+    if (mappings != null) {
+      // Clear and re-populate!
+      //
+      this.wReturn.table.removeAll();
+      this.wReturn.table.setItemCount(mappings.size());
+      for (int i = 0; i < mappings.size(); i++) {
+        SourceToTargetMapping mapping = mappings.get(i);
+        TableItem item = this.wReturn.table.getItem(i);
+        item.setText(2, sourceFields.getValueMeta(mapping.getSourcePosition()).getName());
+        item.setText(1, targetFields.getValueMeta(mapping.getTargetPosition()).getName());
+      }
+      this.wReturn.setRowNums();
+      this.wReturn.optWidth(true);
+    }
+  }
+
+  /** ... */
+  public void getUpdate() {
+    try {
+      final IRowMeta row = this.pipelineMeta.getPrevTransformFields(variables, this.transformName);
+      if (row != null) {
+        ITableItemInsertListener listener =
+            (tableItem, value) ->
+                // possible to check format of input fields
+                true;
+
+        BaseTransformDialog.getFieldsFromPrevious(
+            row, this.wReturn, 1, new int[] {1, 2}, new int[] {}, -1, -1, listener);
+      }
+    } catch (HopException ke) {
+      new ErrorDialog(
+          this.shell,
+          BaseMessages.getString(PKG, "TeraFastDialog.FailedToGetFields.DialogTitle"),
+          BaseMessages.getString(PKG, "TeraFastDialog.FailedToGetFields.DialogMessage"),
+          ke);
+    }
+  }
+
+  /** Dialog is closed. */
+  public void cancel() {
+    this.transformName = null;
+    this.meta.setChanged(this.changed);
+    dispose();
+  }
+
+  /** Ok clicked. */
+  public void ok() {
+    this.transformName = this.wTransformName.getText(); // return value
+    this.meta.getUseControlFile().setValue(this.wUseControlFile.getSelection());
+    this.meta.getVariableSubstitution().setValue(this.wVariableSubstitution.getSelection());
+    this.meta.getControlFile().setValue(this.wControlFile.getText());
+    this.meta.getFastloadPath().setValue(this.wFastLoadPath.getText());
+    this.meta.getDataFile().setValue(this.wDataFile.getText());
+    this.meta.getLogFile().setValue(this.wLogFile.getText());
+    this.meta
+        .getErrorLimit()
+        .setValue(Const.toInt(this.wErrLimit.getText(), TeraFastMeta.DEFAULT_ERROR_LIMIT));
+    this.meta
+        .getSessions()
+        .setValue(Const.toInt(this.wSessions.getText(), TeraFastMeta.DEFAULT_SESSIONS));
+    this.meta.getTargetTable().setValue(this.wTable.getText());
+    this.meta.getConnectionName().setValue(this.wConnection.getText());
+    this.meta
+        .getTruncateTable()
+        .setValue(this.wbTruncateTable.getSelection() && this.wbTruncateTable.getEnabled());
+    this.meta.setDbMeta(this.pipelineMeta.findDatabase(this.wConnection.getText(), variables));
+
+    this.meta.getTableFieldList().getValue().clear();
+    this.meta.getStreamFieldList().getValue().clear();
+    int nrFields = this.wReturn.nrNonEmpty();
+    for (int i = 0; i < nrFields; i++) {
+      TableItem item = this.wReturn.getNonEmpty(i);
+      this.meta.getTableFieldList().getValue().add(item.getText(1));
+      this.meta.getStreamFieldList().getValue().add(item.getText(2));
+    }
+
+    dispose();
+  }
+
+  /** Build UI. */
+  protected void buildUi() {
+    final PluginWidgetFactory factory = new PluginWidgetFactory(this.shell, variables);
+    factory.setMiddle(this.props.getMiddlePct());
+
+    // Buttons at the bottom
+    this.wOk = factory.createPushButton(BaseMessages.getString(PKG, "System.Button.OK"));
+    this.wCancel = factory.createPushButton(BaseMessages.getString(PKG, "System.Button.Cancel"));
+    setButtonPositions(
+        new Button[] {
+          this.wOk, this.wCancel,
+        },
+        factory.getMargin(),
+        null);
+
+    final ModifyListener lsMod = event -> getMeta().setChanged();
+    final SelectionAdapter lsSel =
+        new SelectionAdapter() {
+          @Override
+          public void widgetSelected(final SelectionEvent event) {
+            getMeta().setChanged();
+          }
+        };
+
+    this.buildTransformNameLine(factory);
+    this.buildUseControlFileLine(factory);
+    this.buildControlFileLine(factory);
+    this.buildVariableSubstitutionLine(factory);
+    this.buildFastloadLine(factory);
+    this.buildLogFileLine(factory);
+
+    // Connection line
+    this.wConnection = addConnectionLine(this.shell, this.wLogFile, meta.getDbMeta(), lsMod);
+    this.buildTableLine(factory);
+    this.buildTruncateTableLine(factory);
+    this.buildDataFileLine(factory);
+    this.buildSessionsLine(factory);
+    this.buildErrorLimitLine(factory);
+    this.buildFieldTable(factory);
+    this.buildAscLink(factory);
+
+    this.wTransformName.addModifyListener(lsMod);
+    this.wControlFile.addModifyListener(lsMod);
+    this.wFastLoadPath.addModifyListener(lsMod);
+    this.wLogFile.addModifyListener(lsMod);
+    this.wConnection.addModifyListener(lsMod);
+    this.wTable.addModifyListener(lsMod);
+    this.wDataFile.addModifyListener(lsMod);
+    this.wSessions.addModifyListener(lsMod);
+    this.wErrLimit.addModifyListener(lsMod);
+    this.wbTruncateTable.addSelectionListener(lsSel);
+    this.wUseControlFile.addSelectionListener(lsSel);
+    this.wVariableSubstitution.addSelectionListener(lsSel);
+    this.wReturn.addModifyListener(lsMod);
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildControlFileLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wUseControlFile;
+
+    Label wlControlFile =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.ControlFile.Label"));
+    PropsUi.setLook(wlControlFile);
+    wlControlFile.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wbControlFile =
+        factory.createPushButton(BaseMessages.getString(PKG, CONST_TERA_FAST_DIALOG_BROWSE_BUTTON));
+    PropsUi.setLook(this.wbControlFile);
+    FormData formData = factory.createControlLayoutData(topControl);
+    formData.left = null;
+    this.wbControlFile.setLayoutData(formData);
+
+    this.wControlFile = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wControlFile);
+    formData = factory.createControlLayoutData(topControl);
+    formData.right = new FormAttachment(this.wbControlFile, -factory.getMargin());
+    this.wControlFile.setLayoutData(formData);
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildFastloadLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wVariableSubstitution;
+
+    Label wlFastLoadPath =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.FastloadPath.Label"));
+    PropsUi.setLook(wlFastLoadPath);
+    wlFastLoadPath.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wbFastLoadPath =
+        factory.createPushButton(BaseMessages.getString(PKG, CONST_TERA_FAST_DIALOG_BROWSE_BUTTON));
+    PropsUi.setLook(this.wbFastLoadPath);
+    FormData formData = factory.createControlLayoutData(topControl);
+    formData.left = null;
+    this.wbFastLoadPath.setLayoutData(formData);
+
+    this.wFastLoadPath = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wFastLoadPath);
+    formData = factory.createControlLayoutData(topControl);
+    formData.right = new FormAttachment(this.wbFastLoadPath, -factory.getMargin());
+    this.wFastLoadPath.setLayoutData(formData);
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildUseControlFileLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wTransformName;
+
+    Label wlUseControlFile =
+        factory.createRightLabel(
+            BaseMessages.getString(PKG, "TeraFastDialog.UseControlFile.Label"));
+    PropsUi.setLook(wlUseControlFile);
+    wlUseControlFile.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wUseControlFile = new Button(this.shell, SWT.CHECK);
+    PropsUi.setLook(this.wUseControlFile);
+    this.wUseControlFile.setLayoutData(factory.createButtonLayoutData(wlUseControlFile));
+
+    this.wUseControlFile.addSelectionListener(
+        new SelectionAdapter() {
+          @Override
+          public void widgetSelected(final SelectionEvent event) {
+            disableInputs();
+          }
+        });
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildVariableSubstitutionLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wControlFile;
+
+    Label wlVariableSubstitution =
+        factory.createRightLabel(
+            BaseMessages.getString(PKG, "TeraFastDialog.VariableSubstitution.Label"));
+    PropsUi.setLook(wlVariableSubstitution);
+    wlVariableSubstitution.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wVariableSubstitution = new Button(this.shell, SWT.CHECK);
+    PropsUi.setLook(this.wVariableSubstitution);
+    this.wVariableSubstitution.setLayoutData(
+        factory.createButtonLayoutData(wlVariableSubstitution));
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildLogFileLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wFastLoadPath;
+
+    Label wlLogFile =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.LogFile.Label"));
+    PropsUi.setLook(wlLogFile);
+    wlLogFile.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wbLogFile =
+        factory.createPushButton(BaseMessages.getString(PKG, CONST_TERA_FAST_DIALOG_BROWSE_BUTTON));
+    PropsUi.setLook(this.wbLogFile);
+    FormData formData = factory.createControlLayoutData(topControl);
+    formData.left = null;
+    this.wbLogFile.setLayoutData(formData);
+
+    this.wLogFile = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wLogFile);
+    formData = factory.createControlLayoutData(topControl);
+    formData.right = new FormAttachment(this.wbLogFile, -factory.getMargin());
+    this.wLogFile.setLayoutData(formData);
+  }
+
+  /**
+   * Build transform name line.
+   *
+   * @param factory factory to use.
+   */
+  protected void buildTransformNameLine(final PluginWidgetFactory factory) {
+    this.wlTransformName =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.TransformName.Label"));
+    PropsUi.setLook(this.wlTransformName);
+    this.fdlTransformName = factory.createLabelLayoutData(null);
+    this.wlTransformName.setLayoutData(this.fdlTransformName);
+
+    this.wTransformName = factory.createSingleTextLeft(this.transformName);
+    PropsUi.setLook(this.wTransformName);
+    this.fdTransformName = factory.createControlLayoutData(null);
+    this.wTransformName.setLayoutData(this.fdTransformName);
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildTableLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wConnection;
+
+    Label wlTable =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.TargetTable.Label"));
+    PropsUi.setLook(wlTable);
+    wlTable.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wTable = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wTable);
+    this.wTable.setLayoutData(factory.createControlLayoutData(topControl));
+
+    this.wTable.addFocusListener(
+        new FocusAdapter() {
+          @Override
+          public void focusLost(final FocusEvent event) {
+            setTableFieldCombo();
+          }
+        });
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildTruncateTableLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wTable;
+
+    Label wlTruncateTable =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.TruncateTable.Label"));
+    PropsUi.setLook(wlTruncateTable);
+    wlTruncateTable.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wbTruncateTable = new Button(this.shell, SWT.CHECK);
+    PropsUi.setLook(this.wbTruncateTable);
+    this.wbTruncateTable.setLayoutData(factory.createButtonLayoutData(wlTruncateTable));
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildDataFileLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wbTruncateTable;
+
+    Label wlDataFile =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.DataFile.Label"));
+    PropsUi.setLook(wlDataFile);
+    wlDataFile.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wbDataFile =
+        factory.createPushButton(BaseMessages.getString(PKG, CONST_TERA_FAST_DIALOG_BROWSE_BUTTON));
+    PropsUi.setLook(this.wbDataFile);
+    FormData formData = factory.createControlLayoutData(topControl);
+    formData.left = null;
+    this.wbDataFile.setLayoutData(formData);
+
+    this.wDataFile = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wDataFile);
+    formData = factory.createControlLayoutData(topControl);
+    formData.right = new FormAttachment(this.wbDataFile, -factory.getMargin());
+    this.wDataFile.setLayoutData(formData);
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildSessionsLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wDataFile;
+
+    Label wlSessions =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.Sessions.Label"));
+    PropsUi.setLook(wlSessions);
+    wlSessions.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wSessions = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wSessions);
+    this.wSessions.setLayoutData(factory.createControlLayoutData(topControl));
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildErrorLimitLine(final PluginWidgetFactory factory) {
+    final Control topControl = this.wSessions;
+
+    Label wlErrLimit =
+        factory.createRightLabel(BaseMessages.getString(PKG, "TeraFastDialog.ErrLimit.Label"));
+    PropsUi.setLook(wlErrLimit);
+    wlErrLimit.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    this.wErrLimit = factory.createSingleTextVarLeft();
+    PropsUi.setLook(this.wErrLimit);
+    this.wErrLimit.setLayoutData(factory.createControlLayoutData(topControl));
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildAscLink(final PluginWidgetFactory factory) {
+    final Control topControl = this.wReturn;
+
+    FormData formData = factory.createLabelLayoutData(topControl);
+    formData.right = null;
+  }
+
+  /**
+   * @param factory factory to use.
+   */
+  protected void buildFieldTable(final PluginWidgetFactory factory) {
+    final Control topControl = this.wErrLimit;
+
+    Label wlReturn =
+        factory.createLabel(SWT.NONE, BaseMessages.getString(PKG, "TeraFastDialog.Fields.Label"));
+    PropsUi.setLook(wlReturn);
+    wlReturn.setLayoutData(factory.createLabelLayoutData(topControl));
+
+    final int upInsCols = 2;
+    final int upInsRows;
+    if (this.meta.getTableFieldList().isEmpty()) {
+      upInsRows = 1;
+    } else {
+      upInsRows = this.meta.getTableFieldList().size();
+    }
+
+    this.ciReturn = new ColumnInfo[upInsCols];
+    this.ciReturn[0] =
+        new ColumnInfo(
+            BaseMessages.getString(PKG, "TeraFastDialog.ColumnInfo.TableField"),
+            ColumnInfo.COLUMN_TYPE_CCOMBO,
+            new String[] {""},
+            false);
+    this.ciReturn[1] =
+        new ColumnInfo(
+            BaseMessages.getString(PKG, "TeraFastDialog.ColumnInfo.StreamField"),
+            ColumnInfo.COLUMN_TYPE_CCOMBO,
+            new String[] {""},
+            false);
+    this.tableFieldColumns.add(this.ciReturn[0]);
+    this.wReturn =
+        new TableView(
+            variables,
+            this.shell,
+            SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL,
+            this.ciReturn,
+            upInsRows,
+            null,
+            this.props);
+
+    this.wGetLU =
+        factory.createPushButton(BaseMessages.getString(PKG, "TeraFastDialog.GetFields.Label"));
+    FormData fdGetLU = new FormData();
+    fdGetLU.top = new FormAttachment(wlReturn, factory.getMargin());
+    fdGetLU.right = new FormAttachment(FORM_ATTACHMENT_OFFSET, 0);
+    this.wGetLU.setLayoutData(fdGetLU);
+
+    this.wDoMapping =
+        factory.createPushButton(BaseMessages.getString(PKG, "TeraFastDialog.EditMapping.Label"));
+    FormData fdDoMapping = new FormData();
+    fdDoMapping.top = new FormAttachment(this.wGetLU, factory.getMargin());
+    fdDoMapping.right = new FormAttachment(FORM_ATTACHMENT_OFFSET, 0);
+    this.wDoMapping.setLayoutData(fdDoMapping);
+
+    FormData formData = new FormData();
+    formData.left = new FormAttachment(0, 0);
+    formData.top = new FormAttachment(wlReturn, factory.getMargin());
+    formData.right = new FormAttachment(this.wGetLU, -factory.getMargin());
+    formData.bottom = new FormAttachment(wOk, -2 * PropsUi.getMargin());
+    this.wReturn.setLayoutData(formData);
+  }
+
+  /** Disable inputs. */
+  public void disableInputs() {
+    boolean useControlFile = this.wUseControlFile.getSelection();
+    this.wbControlFile.setEnabled(useControlFile);
+    this.wControlFile.setEnabled(useControlFile);
+    this.wDataFile.setEnabled(!useControlFile);
+    this.wbDataFile.setEnabled(!useControlFile);
+    this.wSessions.setEnabled(!useControlFile);
+    this.wErrLimit.setEnabled(!useControlFile);
+    this.wReturn.setEnabled(!useControlFile);
+    this.wGetLU.setEnabled(!useControlFile);
+    this.wDoMapping.setEnabled(!useControlFile);
+    this.wTable.setEnabled(!useControlFile);
+    this.wbTruncateTable.setEnabled(!useControlFile);
+    this.wConnection.setEnabled(!useControlFile);
+    this.wVariableSubstitution.setEnabled(useControlFile);
+  }
+
+  /** ... */
+  public void setTableFieldCombo() {
+    clearColInfo();
+    new FieldLoader(variables, this).start();
+  }
+
+  /** Clear. */
+  private void clearColInfo() {
+    for (final ColumnInfo colInfo : this.tableFieldColumns) {
+      colInfo.setComboValues(new String[] {});
+    }
+  }
+
+  /**
+   * @return the meta
+   */
+  public TeraFastMeta getMeta() {
+    return this.meta;
+  }
+
+  private static final class FieldLoader extends Thread {
+
+    private final IVariables variables;
+    private final TeraFastDialog dialog;
+
+    /**
+     * Constructor.
+     *
+     * @param dialog dialog to set.
+     */
+    public FieldLoader(final IVariables variables, final TeraFastDialog dialog) {
+      this.variables = variables;
+      this.dialog = dialog;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see Runnable#run()
+     */
+    @Override
+    public void run() {
+      try {
+        final IRowMeta rowMeta = this.dialog.meta.getRequiredFields(variables);
+        if (rowMeta == null) {
+          return;
+        }
+
+        final String[] fieldNames = rowMeta.getFieldNames();
+        if (fieldNames == null) {
+          return;
+        }
+        for (int i = 0; i < this.dialog.tableFieldColumns.size(); i++) {
+          final ColumnInfo colInfo = this.dialog.tableFieldColumns.get(i);
+          if (this.dialog.shell.isDisposed()) {
+            return;
+          }
+          this.dialog
+              .shell
+              .getDisplay()
+              .asyncExec(
+                  () -> {
+                    if (FieldLoader.this.dialog.shell.isDisposed()) {
+                      return;
+                    }
+                    colInfo.setComboValues(fieldNames);
+                  });
+        }
+      } catch (HopException e) {
+        this.dialog.logError(this.toString(), "Error while reading fields", e);
+        // ignore any errors here. drop downs will not be
+        // filled, but no problem for the user
+      }
+    }
+  }
+}

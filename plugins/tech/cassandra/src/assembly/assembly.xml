@@ -1,0 +1,72 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>hop-tech-cassandra</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <baseDirectory>.</baseDirectory>
+    <files>
+        <file>
+            <source>${project.basedir}/src/main/resources/version.xml</source>
+            <outputDirectory>plugins/tech/cassandra</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+    </files>
+
+    <dependencySets>
+        <dependencySet>
+            <includes>
+                <include>org.apache.hop:hop-tech-cassandra:jar</include>
+            </includes>
+            <outputDirectory>plugins/tech/cassandra</outputDirectory>
+        </dependencySet>
+        <dependencySet>
+            <scope>runtime</scope>
+            <excludes>
+                <exclude>org.apache.hop:hop-tech-cassandra:jar</exclude>
+                <exclude>com.github.spotbugs:spotbugs-annotations:jar</exclude>
+                <exclude>org.antlr:antlr-runtime:jar</exclude>
+                <exclude>org.ow2.asm:asm:jar</exclude>
+                <exclude>org.ow2.asm:asm-commons:jar</exclude>
+                <exclude>org.ow2.asm:asm-tree:jar</exclude>
+                <exclude>org.ow2.asm:asm-util:jar</exclude>
+                <exclude>org.lz4:lz4-java:jar</exclude>
+                <exclude>org.yaml:snakeyaml:jar</exclude>
+            </excludes>
+            <outputDirectory>plugins/tech/cassandra/lib</outputDirectory>
+        </dependencySet>
+        <dependencySet>
+            <scope>provided</scope>
+            <includes>
+                <include>org.apache.commons:commons-math3:jar</include>
+                <include>org.yaml:snakeyaml:jar</include>
+                <include>org.antlr:antlr-runtime:jar</include>
+                <include>org.ow2.asm:asm:jar</include>
+                <include>org.ow2.asm:asm-commons:jar</include>
+                <include>org.ow2.asm:asm-tree:jar</include>
+                <include>org.ow2.asm:asm-util:jar</include>
+                <include>org.lz4:lz4-java:jar</include>
+                <include>org.yaml:snakeyaml:jar</include>
+            </includes>
+            <outputDirectory>lib/core</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+</assembly>

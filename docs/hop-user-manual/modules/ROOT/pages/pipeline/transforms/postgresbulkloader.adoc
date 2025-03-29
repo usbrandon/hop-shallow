@@ -1,0 +1,70 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The PostgreSQL Bulk Loader transform streams data from Hop to PostgreSQL, using COPY DATA FROM STDIN into the database.
+
+= image:transforms/icons/PGBulkLoader.svg[PostgreSQL Bulk Loader transform Icon, role="image-doc-icon"] PostgreSQL Bulk Loader
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The PostgreSQL Bulk Loader transform streams data from Hop to Postgresql using https://www.postgresql.org/docs/current/sql-copy.html["COPY DATA FROM STDIN"^] into the database.
+
+TIP: replace boolean fields in your pipeline stream by string fields with "Y" or "N" values to avoid errors.
+
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:question_mark.svg[Maybe Supported, 24]
+!Flink! image:question_mark.svg[Maybe Supported, 24]
+!Dataflow! image:question_mark.svg[Maybe Supported, 24]
+!===
+|===
+
+IMPORTANT: The PostgreSQL Bulk Loader is linked to the database type. It will fetch the JDBC driver from the hop/lib/jdbc folder. +
+ +
+Valid locations for the JDBC driver for this transform are the database plugin lib and the main hop/lib folder. It will not work in combination with the SHARED_JDBC_FOLDER variable.
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform.
+|Connection|Name of the database connection on which the target table resides.
+|Target schema|The name of the Schema for the table to write data to.
+This is important for data sources that allow for table names with dots '.' in it.
+|Target table|Name of the target table.
+|Load action|Insert, Truncate.
+Insert inserts, truncate first truncates the table.
+|DB Name Override|(optional) database name to override the database name used in this transform's connection.
+|Enclosure|the enclosure character to use in the `QUOTE AS` part of the copy command
+|Delimiter|the delimiter character to use in the `DELIMITER AS` part of the copy command
+|Stop on error|Stop the execution of this transform when an error occurs
+|Fields to load a|This table contains a list of fields to load data from, properties include:
+
+* Table field: Table field to be loaded in the PostgreSQL table;
+* Stream field: Field to be taken from the incoming rows;
+* Date mask: Either "Pass through, "Date" or "DateTime", determines how date/timestamps will be loaded in PostgreSQL.
+
+|===
+

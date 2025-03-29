@@ -1,0 +1,83 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[HopGui]]
+:imagesdir: ../../assets/images/
+:page-pagination:
+:description: Getting Started (5/8): Hop Gui is Hop's visual development environment where you design, run and debug your workflows and pipelines. In this step, we'll take a quick tour of the user interface and describe some of the functionalities in Hop GUI.
+
+= Hop Gui
+
+The Apache Hop GUI is your local development environment to build, run, preview and debug workflows and pipelines.
+
+== Start the Apache Hop GUI
+
+As we've seen in xref:getting-started/hop-tools.adoc[Hop Tools], starting Hop-Gui is easy:
+
+[tabs]
+====
+Windows::
++
+--
+[source,shell]
+hop-gui.bat
+--
+
+Linux, macOS::
++
+--
+[source,shell]
+￼./hop-gui.sh
+--
+====
+
+== Walking through the Hop GUI
+
+After starting the Apache Hop GUI, you’ll be presented with the window below.
+
+image:getting-started/gs-hop-gui-overview-1.png[Hop Gui Overview]
+
+{nbsp} +
+
+Let's divide the view into two parts:
+
+image:getting-started/gs-hop-gui-overview-2.png[Hop Gui Overview]
+￼
+
+* The **main toolbar** offers a range of functions, including creating new files (such as pipelines and workflows) and adding metadata. It also provides options for managing projects and environments, as well as tools specifically for handling pipelines, workflows, and project settings.
+* The **perspectives toolbar** includes switcher icons between the various perspectives.
+
+
+** image:icons/data_orch.svg[width="24px"] xref:hop-gui/perspective-data-orchestration.adoc[Data Orchestration]
+
+** image:icons/execution.svg[width="24px"] xref:hop-gui/perspective-execution-information.adoc[Execution Information]
+
+** image:icons/gear.svg[width="24px"] xref:hop-gui/perspective-configuration.adoc[Configuration]
+
+** image:icons/metadata.svg[width="24px"] xref:hop-gui/perspective-metadata.adoc[Metadata]
+
+** image:icons/folder.svg[width="24px"] xref:hop-gui/perspective-file-explorer.adoc[File explorer]
+
+** image:icons/search.svg[width="24px"] xref:hop-gui/perspective-search.adoc[Search]
+
+** image:icons/plugin.svg[width="24px"] xref:hop-gui/perspective-plugin.adoc[Plugins explorer]
+
+** image:icons/neo4j_logo.svg[width="24px"] xref:hop-gui/perspective-neo4j.adoc[Neo4j]
+
+Let's see how we can use Hop Gui to do what Hop is all about: create pipelines and workflows!
+
+INFO: check the xref:../hop-gui/index.adoc[Hop Gui] section of the Hop documentation for a more detailed tour of the Hop Gui.
+

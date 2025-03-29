@@ -1,0 +1,88 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:imagesdir: ../../assets/images
+:description: Version control is an important aspect of any serious data orchestration project.. Hop's file explorer perspective offers the basic functionality to manage your work in git: pull, push, visual diff, commit etc are all available from a user friendly ui.
+
+= Working with git
+
+Version control is an important aspect of any serious data orchestration project.
+Hop wants to make it as easy as possible to manage versions for your workflows and pipelines through the integrated git options in the xref:hop-gui/perspective-file-explorer.adoc[File Explorer perspective].
+
+== File Explorer Toolbar
+
+If you open the file explorer for a project that is not version controlled in git, the git icons in the file explorer's main toolbar (top left) will be shown as greyed-out and disabled.
+
+image::hop-gui/hop-gui-no-git.png[No git available,width="50%"]
+
+If git was found (ie the project has a `.git` folder in the project root), these buttons in this toolbar are enabled.
+
+image::hop-gui/hop-gui-git-toolbar.png[Git toolbar,width="50%"]
+
+The available options to work with files and the available git operations in this toolbar are briefly discussed below.
+
+[options="header", cols="1,2,5,1"]
+|===
+|icon|action|description|shortcut
+|image:icons/arrow-right.svg[width="24px"]|Open selected file|Opens the selected file in the appropriate editor (pipeline or workflow editor for workflows and pipelines, text editor for other files|double-click
+|image:icons/folder-add.svg[width="24px"]|Add folder|adds a new folder at the selected location. A popup is shown for the folder name|
+|image:icons/delete.svg[width="24px"]|Delete Selected File|Deletes the selected file|DEL
+|image:icons/rename.svg[width="24px"]|Rename the selected file|Makes the selected file name editable to allow renaming|F2
+|image:icons/refresh.svg[width="24px"]|Refresh|Refreshes the projects folder and file structure|
+|image:icons/git-info.svg[width="24px"]|Git info|Populates the file explorer's git dialog with version information for the selected file.|
+|image:icons/git-add.svg[width="24px"]|Git Add|Add the selected file to version control|
+|image:icons/git-revert.svg[width="24px"]|Git Revert|Revert file to last committed version (HEAD)|
+|image:icons/git-commit.svg[width="24px"]|Git commit|Commit the latest changes for the selected file (providing a commit message)|
+|image:icons/push.svg[width="24px"]|Git push|Push the recent changes to the remote repository|
+|image:icons/pull.svg[width="24px"]|Git pull|Pull the latest changes from the remote repository|
+|===
+
+NOTE: Only the available options are availabe at a given time. E.g. `git add` will not be available for files that already are in version control.
+
+
+== File Explorer Tree
+
+In the folder and file structure tree below the toolbar, files use a color coding scheme to indicate the git status of a file:
+
+* black: unchanged.
+This is the latest version of the file available in git, no changes detected.
+* grey: this file is ignored
+* blue: staged for commit.
+This file is ready to be committed ('Git Commit')
+* red: not staged for commit.
+Add this file to git before changes can be committed ('Git Add').
+
+== Working with files in git
+
+Add a file::
+Click on a file that is not yet staged for commit (red), click 'Git Add'.
+The color of the file changes to blue (staged for commit).
+
+Commit a file::
+Click on a file that is staged for commit (blue), click 'Git Commit'.
+A popup dialog will ask to confirm the file to commit, and will show a popup for your commit message.
+Change the default 'Commit Message' to a commit message that describes the changes you made to the file.
+The file color changes to black (no changes).
+
+Show git info::
+Click on a file that is under version control (black or blue).
+The file explorer will show the git status for this file: the file or folder, status, branch and a revisions table (list of previous commits).
+Select one of the available commits to show the changed files to show the changed files for that revision.
+Select any of the files in the revision from the 'Changed files' list to show the git diff information on the right hand side.
+For workflows and pipelines, click 'Visual diff' to open the file in the Data Orchestration perspective.
+Hop will show an additional icon in the upper right corner of the action or transform icon to indicate the git change that was made (green for added or yellow for changed)
+
+image::hop-gui/git-visual-diff.png[Git visual diff,width="65%"]

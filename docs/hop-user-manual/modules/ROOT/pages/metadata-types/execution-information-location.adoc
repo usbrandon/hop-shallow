@@ -1,0 +1,89 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:imagesdir: ../../assets/images/
+:page-pagination:
+:description: The Execution Information Location determines where Apache Hop can send information execution information to.
+
+= Execution Information Location
+
+== Description
+
+The Execution Information Location determines where Apache Hop can send information execution information to.
+
+After execution this information can be consulted from the xref:hop-gui/perspective-execution-information.adoc[Execution Information Perspective]
+
+== Options
+
+[options="header"]
+|===
+
+|Option|Description|Default
+|Name|The name to use for this Execution Information Location|-
+|Description|The description to use for this Execution Information Location|-
+
+|Data logging delay (ms)||2000
+|Data logging interval (ms)||5000
+|Data logging size (rows)||1000
+
+|Location type
+|The location plugin type to write to.  Depending on the type you can enter more plugin specific options.
+|
+|===
+
+== Location type specific options
+
+
+=== File location
+
+With a file location you can write execution information to files in a path on the local file system.
+
+Options:
+
+* *Root folder*: the folder to write the execution information to.
+
+=== Caching File Location
+
+Like the file location, execution information is written to a folder.  The difference is that information is written
+per pipeline or workflow. All the information needed is aggregated into these top level JSON files.
+The way this happens is by keeping the execution information in a memory cache for a period that can be configured.
+The upside is that there is a lot less stress on the file system.
+The downside is that there is a bit of extra memory being used.
+Certain navigation operations in the GUI, for example to find related executions, will need to read a lot more data.
+
+Options:
+
+* *Root folder*: the folder in which execution information is stored in JSON files
+* *Persistence delay*: This is the maximum time to wait before execution information is written to disk, expressed in milliseconds.
+* *Maximum cache age*: This is the maximum time to keep execution information around in memory, before clearing it out, expressed in milliseconds.  It's advised to keep this below the expected duration of your workflow or pipeline.
+
+=== Remote location
+
+A remote location allows you to write execution information to a Hop Server.
+
+Options:
+
+* *Hop Server*: the remote Hop Server to write the execution information to.
+* *Execution Information Location*: the Execution Information Location to be used on the remote Hop Server.
+
+=== Neo4j location
+
+With this location type you can store execution information in a xref:technology/neo4j/index.adoc[Neo4j] graph database.  For more information on this plugin, see the xref:metadata-types/neo4j/neo4j-location-type.adoc[Neo4j location type] documentation.
+
+=== Cleanup
+
+If you want to automate removal of execution information from your graph database you can use a pipeline or workflow to do so.  
+

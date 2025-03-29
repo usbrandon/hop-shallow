@@ -1,0 +1,52 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Copy Rows To Result transform allows you to transfer rows of data (in memory) to the next pipeline or workflow action via an internal result row set. Remember that values or variables will not be copied, only row data.
+
+= image:transforms/icons/rowstoresult.svg[Copy rows to result transform Icon, role="image-doc-icon"] Copy rows to result
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+The Copy Rows To Result transform allows you to transfer rows of data (in memory) to the next pipeline (or workflow action) in a workflow via an internal result row set.
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:cross.svg[Not Supported, 24]
+!Flink! image:cross.svg[Not Supported, 24]
+!Dataflow! image:cross.svg[Not Supported, 24]
+!===
+|===
+
+== Usage
+The Copy Rows To Result transform can be paired with the Get Rows from Result transform to retrieve the result row set in a pipeline. In some cases, the Get rows from Result transform is not required to retrieve the result set such as a pipeline transform in a workflow. Data rows can be passed from and to pipelines on a workflow, but data rows cannot be accessed directly in a workflow.
+
+This transform can be used by the Get Rows from Result transform and some workflow actions that allow to process the internal result row set.
+
+NOTE: this transform is mainly available for historical reasons. There are newer and better ways to create loops in Hop, check the xref:best-practices/index.adoc[Best Practices] for more information.
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform this name has to be unique in a single pipeline.
+|===

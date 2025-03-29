@@ -1,0 +1,44 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /workflow/actions/
+:language: en_US
+:description: The Check Files Locked action loops over a list of files to check if they are locked by another process.
+
+= Check Files Locked
+
+== Description
+
+The `Check files locked` action loops over a list of files to check if they are locked by another process.
+
+The way that it verified is by renaming a file to the same name as before.
+
+On certain operating systems (MS Windows systems in particular) this operation will fail if the file is locked.
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Action name|The name of the workflow action.
+|Settings: Include subfolders|Enable this option to also check files in subfolders of specified folders
+|Settings: Copy previous results to args? |Pass the result rows of a previous workflow action execution to the files list of this action.
+|Files/Folders|The files or folders to check.
+|Wildcard|The wildcards are Java Regular expressions.
+For instance .*\.txt would check any file with a .txt extension.
+|===
+
+After specifying a folder and wildcard (regular expression), use the `Add` button to add your file/folder selection to the table. Use the `Delete` or `Edit` buttons to remove or edit selected lines in the table.

@@ -1,0 +1,120 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /workflow/actions/
+:language: en_US
+:description:
+
+:openvar: ${
+:closevar: }
+
+= Pipeline
+
+== Description
+
+The `Pipeline` action runs a previously-defined pipeline within a workflow.
+
+This action is the access point from your workflow to your actual data processing activity (pipeline).
+
+== Usage
+An example of a common workflow includes getting FTP files, checking existence of a necessary target database table, running a pipeline that populates that table, and e-mailing an error log if a pipeline fails.
+For this example, the Pipeline action defines which pipeline to run to populate the table.
+
+See also:
+
+* The xref:workflow/actions/workflow.adoc[Workflow action] that executes a sub-workflow from a workflow.
+* The xref:pipeline/transforms/workflow-executor.adoc[Workflow Executor transform] that executes a workflow from a pipeline.
+* The xref:pipeline/transforms/pipeline-executor.adoc[Pipeline Executor transform] that executes a sub-pipeline from a pipeline.
+
+== Options
+
+=== General
+
+[options="header", width="90%", cols="1,3"]
+|===
+|Option|Description
+|Action name|Name of the action.
+|Pipeline|Specify your pipeline by entering in its path or clicking Browse.
+
+The selected pipelines will automatically converted to a path relative to your `{openvar}PROJECT_HOME{closevar}`. +
+For example, if your `{openvar}PROJECT_HOME{closevar}` is `/home/admin/hop/project/` and you select a pipeline `/home/admin/hop/project/subfolder/sub.hpl` than the path will automatically be converted to `{openvar}PROJECT_HOME{closevar}/subfolder/sub.hpl`.
+
+|Run Configuration|The pipeline can run in different types of xref:metadata-types/pipeline-run-config.adoc[pipeline configurations].
+Select the desired run configuration to control where and how the pipeline is executed.
+|===
+
+=== Options tab
+
+[options="header", width="90%", cols="1,3"]
+|===
+|Option|Description
+|Execute for every result row|Runs the pipeline once for every result row from a previous pipeline (or workflow) in the current workflow.
+|Clear results rows before execution|Makes sure the results rows are cleared before the pipeline starts.
+|Clear results files before execution|Makes sure the results files are cleared before the pipeline starts.
+|Wait for remote pipeline to finish|If you selected Server as your environment type, choose this option to block the workflow until the pipeline runs on the server.
+|Follow local abort to remote pipeline|If you selected Server as your environment type, choose this option to send the local abort signal remotely.
+|===
+
+=== Logging tab
+
+By default, if you do not set logging, Apache Hop will take generated log entries and create a log record inside the workflow.
+For example, suppose a workflow has three pipelines to run and you have not set logging.
+The pipelines will not log information to other files, locations, or special configurations.
+In this instance, the workflow runs and logs information into its master workflow log.
+
+In most instances, it is acceptable for logging information to be available in the workflow log.
+For example, if you have load dimensions, you want logs for your load dimension runs to display in the workflow logs.
+If there are errors in the pipelines, they will be displayed in the workflow logs.
+However, you want all your log information kept in one place, you must then set up logging.
+
+[options="header", width="90%", cols="1,3"]
+|===
+|Option|Description
+|Specify logfile|Specifies a separate logging file for running this pipeline.
+|Name|Specifies the directory and base name of the log file (C:\logs for example).
+|Extension|Specifies the file name extension (.log or .txt for example).
+|Log level|Specifies the logging level for running the pipeline.
+See xref:logging/logging-basics.adoc[Logging] for more details.
+|Append logfile|Appends the logfile as opposed to creating a new one.
+|Create parent folder|Creates a parent folder for the log file if it does not exist.
+|Include date in filename|Adds the system date to the filename with format YYYYMMDD (_20051231).
+|Include time in filename|Adds the system time to the filename with format HHMMSS (_235959).
+|===
+
+=== Parameters tab
+
+*Pass params downstream*: On the Parameters tab, select the pipeline transform checkbox to `Pass parameter values to sub pipeline`. The parameter must already exist in the pipeline (in pipeline properties for example) or alternatively, on the Parameters tab, you can specify new parameters.
+The Parameters tab allows you to override existing parameter values or NULL them by leaving the value empty.
+
+*Pass field values upstream*: The sub pipeline requires a Copy rows to result transform to send a row upstream. This requires a row to exist in the sub pipeline. Note that that rows do not exist in a workflow, but you can use a Get variables in a subsequent sub pipeline to use the first sub pipeline’s field values.
+
+Use Set variables if you want to pass a single value upstream from a pipeline to the workflow and act upon that variable. In this case, you can choose a scope of “valid in the parent workflow”.
+
+
+[options="header", width="90%", cols-"1,3]
+|===
+|Option|Description
+|Copy results to parameters|Copies the results from a previous pipeline as parameters of the pipeline using the Copy rows to result transform.
+|Pass parameter values to sub pipeline|Pass all parameters of the workflow down to the sub-pipeline.
+|Parameter|Specify the parameter name passed to the pipeline.
+|Stream column name|Specify the field of an incoming record from a previous pipeline as the parameter.
+|Value|Specify pipeline parameter values through one of the following actions: +
+- Manually entering a value (ETL workflow for example). +
+- Using another parameter to set the value ({openvar}Internal.workflow.Name{closevar} for example). +
+- Using a combination of manually specified values and parameter values (\{openvar}FILE_PREFIX{closevar}_{openvar}FILE_DATE{closevar}.txt for example).
+
+|Get Parameters|Get the existing parameters already associated by the pipeline.
+|===

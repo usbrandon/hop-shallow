@@ -1,0 +1,64 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Simple Mapping transform allows you to re-use a series of transforms in the form of a "re-usable pipeline" also known as a "Mapping".
+
+= image:transforms/icons/MAP.svg[Simple Mapping transform Icon, role="image-doc-icon"] Simple Mapping
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The Simple Mapping transform allows you to re-use a series of transforms in the form of a "re-usable pipeline" also known as a "Mapping".
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:check_mark.svg[Supported, 24]
+!Flink! image:check_mark.svg[Supported, 24]
+!Dataflow! image:check_mark.svg[Supported, 24]
+!===
+|===
+
+Think of it as a re-usable function in programming – you pass some data into the function and it returns data back.
+In the Simple Mapping transform you can specify one xref:pipeline/transforms/mapping-input.adoc[Mapping Input] transform to pass data to and one xref:pipeline/transforms/mapping-output.adoc[Mapping Output] transform to retrieve rows of data from, as well as parameters to pass to the mapping.
+
+Use this transform if you find yourself repeating the same logic multiple times over several different pipelines.
+
+== Options
+
+The options are fairly self-explanatory:
+
+* Transform name: a unique name in your pipeline
+* Pipeline: The name of the mapping (sub-) pipeline to embed.
+This pipeline is executed separately and is considered a separate entity.
+It is always executed with a standard local Hop pipeline run configuration since that is currently the only one capable of streaming data into and out of transforms.
+* Parameters tab: specify the parameters you want to pass to the mapping pipeline
+* Input tab: specify which fields to pass to the xref:pipeline/transforms/mapping-input.adoc[Mapping Input] transform in the mapping.
+You can map (hence the name) field names.
+* Output tab: specify how to rename output fields retrieved from the xref:pipeline/transforms/mapping-output.adoc[Mapping Output] transform.
+
+== Sample
+
+In the samples project you can find two examples of the Simple Mapping transform, the transforms/files/simple-mapping-child.hpl and simple-mapping-parent.hpl pipelines.
+
+In the sample files discussed above, the parent pipeline sends first and last name fields to the child, a calculation is performed and then a field is populated with the calculation and sent back.
+
+

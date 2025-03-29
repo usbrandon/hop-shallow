@@ -1,0 +1,66 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Abort tranform aborts a running pipeline as soon as it receives input data. The main use case for this transform is to throw an error when an unexpected or unwanted situation occurs.
+
+
+= image:transforms/icons/abort.svg[Abort Icon, role="image-doc-icon"] Abort
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+The Abort tranform aborts a running pipeline as soon as it receives input data. The main use case for this transform is to throw an error when an unexpected or unwanted situation occurs.
+
+For example, you can use this transform so that a pipeline can be aborted after x number of rows flow to over an error hop.
+
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:check_mark.svg[Supported, 24]
+!Spark! image:check_mark.svg[Supported, 24]
+!Flink! image:check_mark.svg[Supported, 24]
+!Dataflow! image:check_mark.svg[Supported, 24]
+!===
+|===
+
+|===
+| Transform name  | Specify the unique name of the Abort transform on the canvas.
+|===
+
+== Options
+
+[%header]
+|===
+| Option                   | Description
+| Abort the running pipeline | Stops the pipeline when the Abort threshold is reached.
+| Abort and log as an error  | Logs an error report when the Abort transform stops the pipeline. Useful when a parent transform executes a sub-pipeline containing the Abort transform.
+| Stop input processing     | Stops input transforms when the Abort threshold is reached, but processes already retrieved records.
+| Abort threshold           | Specifies the number of rows at which to abort the pipeline after an error is detected. For example, `0` stops after the first row, `5` stops after the sixth row. Default: `0`.
+|===
+
+== Logging
+
+The Abort transform features the following logging options:
+[%header]
+|===
+| Option              | Description
+| Abort message       | The message to put in the log upon aborting. If not filled in a default message will be used.
+| Always log rows     | Always log the rows processed by the Abort transform. This allows the rows to be logged although the log level of the pipeline would normally not do it. This way you can always see in the log which rows caused the pipeline to abort.
+|===

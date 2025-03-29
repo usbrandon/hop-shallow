@@ -1,0 +1,93 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+---
+
+name: Feature Request
+description: File a feature request
+title: "[Feature Request]: "
+labels: ["awaiting triage"]
+type: "Feature"
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What would you like to happen?
+      description: Please describe your feature request
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Issue Priority
+      description: What priority is this feature? See [priority guide](https://hop.apache.org/community/contribution-guides/priority-guide/) for the meaning and expectations around issue priorities.
+      options:
+        - "Priority: 3"
+        - "Priority: 2"
+        - "Priority: 1"
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Issue Component
+      multiple: true
+      options:
+        - "Component: Actions"
+        - "Component: API"
+        - "Component: Beam"
+        - "Component: CLI"
+        - "Component: Containers"
+        - "Component: Database"
+        - "Component: Documentation"
+        - "Component: Hop Config"
+        - "Component: Hop Gui"
+        - "Component: Hop Run"
+        - "Component: Hop Server"
+        - "Component: Hop Web"
+        - "Component: Import"
+        - "Component: Infrastructure"
+        - "Component: Integration Testing"
+        - "Component: Metadata"
+        - "Component: Neo4j"
+        - "Component: Pipelines"
+        - "Component: Samples"
+        - "Component: Transforms"
+        - "Component: Translations"
+        - "Component: VFS"
+        - "Component: Website"
+        - "Component: Workflows"
+        - "Component: Other"
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        You can manipulate these issues by making a comment containing one of the following commands. \
+        Command List: \
+        .take-issue self-assign the issue to you \
+        .close-issue Close this issue \
+        .reopen-issue Reopen a closed issue \
+        .add-labels label1,label2,'label 3 with spaces' \
+        .remove-labels label1,label2,'label 3 with spaces' \
+        .set-labels label1,label2,'label 3 with spaces' (which removes any labels not in that set)

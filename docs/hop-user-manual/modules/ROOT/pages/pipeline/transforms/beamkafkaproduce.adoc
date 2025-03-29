@@ -1,0 +1,105 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+:documentationPath: /pipeline/transforms/
+:language: en_US
+:description: The Beam Kafka Produce transform publishes records to a Kafka cluster using the Beam execution engine.
+
+= image:transforms/icons/beam-kafka-output.svg[Beam Kafka Produce Icon, role="image-doc-icon"] Beam Kafka Produce
+
+[%noheader,cols="3a,1a", role="table-no-borders" ]
+|===
+|
+== Description
+
+The Beam Kafka Produce transform link:https://kafka.apache.org/25/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html[publishes] records to a Kafka cluster using the Beam execution engine.
+|
+== Supported Engines
+[%noheader,cols="2,1a",frame=none, role="table-supported-engines"]
+!===
+!Hop Engine! image:cross.svg[Not Supported, 24]
+!Spark! image:check_mark.svg[Supported, 24]
+!Flink! image:check_mark.svg[Supported, 24]
+!Dataflow! image:check_mark.svg[Supported, 24]
+!===
+|===
+
+== Limitations
+
+The main limitation of the Kafka Producer is that it currently only supports writing or producing Strings as keys and String and Avro Record as values.
+
+== Options
+
+[options="header"]
+|===
+|Option|Description
+|Transform name|Name of the transform, this name has to be unique in a single pipeline.
+|Bootstrap servers|A comma separated list of hosts which are Kafka brokers in a "bootstrap" Kafka cluster.
+|The topics|The topics to publish to.
+|The field to use as key|The record key.
+|The field to use as message|The record message.
+|===
+
+=== Avro and Schema registry
+
+Here are some options you need to send Avro Record values to a Kafka server.
+The schema of Avro values are not sent to Kafka but to a schema registry.  As such you need to have one available.
+Here are some options you need to set to make this work on a Confluent Cloud Kafka instance.  There are various parts of the software stack that need authentication, hence the bit of redundancy.   We recommend that you put these options in variables in your environment configuration file.
+
+[options="header"]
+|===
+|Option|Example
+
+|schema.registry.url
+|https://abcd-12345x.europe-west3.gcp.confluent.cloud
+
+|value.converter.schema.registry.url
+|https://abcd-12345x.europe-west3.gcp.confluent.cloud
+
+|auto.register.schemas
+|true
+
+|security.protocol
+|SASL_SSL
+
+|sasl.jaas.config
+|org.apache.kafka.common.security.plain.PlainLoginModule required username="CLUSTER_API_KEY" password="CLUSTER_API_SECRET";
+
+|username
+|CLUSTER_API_KEY
+
+|password
+|CLUSTER_API_SECRET
+
+|sasl.mechanism
+|PLAIN
+
+|client.dns.lookup
+|use_all_dns_ips
+
+|acks
+|ALL
+
+|basic.auth.credentials.source
+|USER_INFO
+
+|basic.auth.user.info
+|CLUSTER_API_KEY:CLUSTER_API_SECRET
+
+|schema.registry.basic.auth.user.info
+|SCHEMA_REGISTRY_API_KEY:SCHEMA_REGISTRY_API_SECRET
+
+|===

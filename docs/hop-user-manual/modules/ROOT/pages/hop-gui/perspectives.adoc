@@ -1,0 +1,43 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+
+= Hop Gui Perspectives
+:imagesdir: ../assets/images
+:description: Hop Gui provides a number of perspectives for a variety of tasks. You'll spend most of your time in the data orchestration perspective, building workflows and pipelines, but other perspectives for metadata management, file management, search etc offer tons of functionality.
+
+Hop comes with a number of perspectives built in.
+
+Change the current perspectives by clicking on the icon in the left-hand toolbar, or through the corresponding keyboard shortcut.
+Use the keyboard shortcuts `CTRL-SHIFT-arrow-up` and `CTRL-SHIFT-arrow-down` to cycle through perspectives.
+
+Here are the available perspectives:
+
+* image:icons/data_orch.svg[width="24px"] xref:hop-gui/perspective-data-orchestration.adoc[Data Orchestration]
+
+* image:icons/execution.svg[width="24px"] xref:hop-gui/perspective-execution-information.adoc[Execution Information]
+
+* image:icons/gear.svg[width="24px"] xref:hop-gui/perspective-configuration.adoc[Configuration]
+
+* image:icons/metadata.svg[width="24px"] xref:hop-gui/perspective-metadata.adoc[Metadata]
+
+* image:icons/folder.svg[width="24px"] xref:hop-gui/perspective-file-explorer.adoc[File explorer]
+
+* image:icons/search.svg[width="24px"] xref:hop-gui/perspective-search.adoc[Search]
+
+* image:icons/plugin.svg[width="24px"] xref:hop-gui/perspective-plugin.adoc[Plugins explorer]
+
+* image:icons/neo4j_logo.svg[width="24px"] xref:hop-gui/perspective-neo4j.adoc[Neo4j]

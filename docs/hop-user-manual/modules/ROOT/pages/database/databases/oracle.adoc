@@ -1,0 +1,53 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[database-plugins-oracle]]
+:documentationPath: /database/databases/
+:language: en_US
+
+= Oracle
+
+[cols="2*",options="header"]
+|===
+| Option | Info
+|Type | Relational
+|Driver | https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html[Driver Link]
+|Version Included | None
+|Hop Dependencies | None
+|Documentation | https://docs.oracle.com/cd/E11882_01/java.112/e16548/toc.htm[Documentation Link]
+|JDBC Url | jdbc:oracle:thin:@hostname:port Number:databaseName
+|Driver folder | <Hop Installation>/lib/jdbc
+|===
+
+TIP: Starting with Oracle Database 11g Release 1 (11.1), data type `Date` will be mapped to `Timestamp` by default.
+Set JDBC property `oracle.jdbc.mapDateToTimestamp=false` to avoid data type `Date` being converted to data type `Timestamp`. +
+Check xref:database/databases.adoc#_options[Options] in the Relational Database Connection docs for more information.
+
+== Creating connections
+
+There are 4 ways to create a connection to an Oracle database in Apache Hop:
+
+* If you have a SID, use this (old) format: `jdbc:oracle:thin:@hostname:PORT:SID`. +
+Put the SID with `:` prefix in the database name
+
+* If you have a service name, use this (newer) format: `jdbc:oracle:thin:@//HOSTNAME:PORT/SERVICENAME`. +
+Put the service name with `/` prefix in the database name
+
+* If you want to use TNS format: `jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=host) (PORT=port)) (CONNECT_DATA=(SERVICE_NAME=service_name))`. +
+Put the TNS description in the database name and leave the hostname and port empty.
+
+* If you want to use a specific TNS_ADMIN, you providing the path for tnsnames.ora through TNS_ADMIN property: `jdbc:oracle:thin:@mydb.mydomain?TNS_ADMIN=C:\\Temp\\tns` +
+Use manual connection url (not the options tab because Apache Hop does not pass options in the url for Oracle). 

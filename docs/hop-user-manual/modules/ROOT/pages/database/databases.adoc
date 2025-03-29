@@ -1,0 +1,91 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+////
+[[database-plugins]]
+:imagesdir: ../../assets/images
+:openvar: ${
+:closevar: }
+:description: Hop supports tens of databases out of the box. If your preferred database has no specific support, you can probably still connect through a generic database connection.
+= Database Plugins
+
+Apache Hop has optimized support for many database types. If you are using an unsupported database, you can always create a generic connection.
+
+To create a database connection go to the metadata perspective, right-click on `Relational Database Connections` and select `New`.
+
+The connection is saved in a central location and can then be used by all pipelines and workflows.
+If you have set your project to work with Hop, the database information will be in the `{openvar}PROJECT_HOME{closevar}/metadata/rdbms` folder. For each connection, separate a .json file will be generated in this folder. This json file will have the name of the connection and will contain all of the connection information.
+
+== Adding JDBC drivers
+
+Apache Hop includes JDBC drivers for all databases that provide their drivers under a license that is compatible with the Apache Public License. All JDBC drivers that come with Apache Hop can be found in `lib/jdbc` in your Apache Hop installation folder.
+
+The documentation for the various database types in following subsections will show you whether the driver for your database is included. If it included, the connection editor will also show the version of the installed driver. If the driver isn't included, the documentation will guide you to the download location.
+
+Set the `HOP_SHARED_JDBC_FOLDERS` environment variable to a folder that contains your additional JDBC folders. Having them in a central folder helps you to easily upgrade or change your Apache Hop installation, without the need to add your JDBC drivers every time.
+This variable accepts a comma separated list to point to multiple directories the default value when not set is `lib/jdbc`, e.g. `<PATH_TO_YOUR_HOP_INSTALLATION>/lib/jdbc,<PATH_TO_YOUR_JDBC_FOLDER>`.
+
+To avoid conflicts, make sure you only have on driver for each database, and make sure you don't have multiple copies of your drivers, e.g. both in `HOP_SHARED_JDBC_FOLDERS` and `hop/lib/jdbc` folder.
+
+== Generic connection
+
+When a specific database type is not yet available for the database you want to use, you can use the generic connection.
+To use a generic connection you have to copy your jdbc driver to the `<PATH_TO_YOUR_HOP_INSTALLATION>/lib/jdbc` folder or in your  `HOP_SHARED_JDBC_FOLDERS` folder.
+
+
+image::generic_connection.png[Generic Connection Dialog]
+
+Check the documentation for your databases' driver class and URL syntax to create your connection.
+
+In the Driver Class field you specify your driver class, for example if you use PostgreSQL the class is `org.postgresql.Driver`.
+
+== Advanced properties
+
+The advanced tab lets you specify a number of additional properties for your database connection.
+
+[%header, width="90%", cols="1,2"]
+|===
+|Property|Description
+|Supports the Boolean data type|is Boolean supported?
+|Supports the Timestamp data type|is Timestamp supported?
+|Quote all identifiers in database|Add quotes around all identifiers for generated SQL statements.
+|Force all identifiers to lower case|Change all identifiers to lower case for generated SQL statements.
+|Force all identifiers to upper case|Change all identifiers to upper case for generated SQL statements.
+|Preserve case of reserved words|Don't change the casing for all reserved words for generated SQL statements.
+|The preferred schema name|The schema name to use by default (can be overruled).
+|The SQL statements to run after connection (; separated|a semicolon (';') separated list of SQL statements that need to be executed after the connection is created.
+|===
+
+== Options
+
+The options table contains a list of key/value pairs that can be added to your JDBC driver. Check your database JDBC driver documentation for the right syntax.
+
+For example, to add additional options to a MS SQL database, you can add options to achieve a JDBC URL like the one below. Apache Hop will take care of these properties in the background, there usually is no need to manually modify the JDBC URL (but you _can_, and in a `Generic` connection, you _have to_).
+
+```
+jdbc:sqlserver://localhost:1433;" +
+     "databaseName=AdventureWorks;integratedSecurity=true;" +
+     "encrypt=true;trustServerCertificate=true
+```
+
+[%noheader, width="50%", cols="4,1"]
+|===
+|integratedSecurity|true
+|encrypt|true
+|trustServerCertificate|true
+|===
+
+// tag::website-links[]
+// end::website-links[]

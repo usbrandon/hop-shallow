@@ -1,0 +1,262 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hop.ui.hopgui.file.pipeline;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import org.apache.hop.core.exception.HopException;
+import org.apache.hop.core.extension.ExtensionPointHandler;
+import org.apache.hop.core.extension.HopExtensionPoint;
+import org.apache.hop.core.file.IHasFilename;
+import org.apache.hop.core.gui.plugin.action.GuiAction;
+import org.apache.hop.core.gui.plugin.action.GuiActionType;
+import org.apache.hop.core.logging.LogChannel;
+import org.apache.hop.core.variables.IVariables;
+import org.apache.hop.core.xml.XmlHandler;
+import org.apache.hop.history.AuditManager;
+import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.pipeline.PipelineMeta;
+import org.apache.hop.ui.core.dialog.ErrorDialog;
+import org.apache.hop.ui.core.gui.HopNamespace;
+import org.apache.hop.ui.hopgui.HopGui;
+import org.apache.hop.ui.hopgui.HopGuiExtensionPoint;
+import org.apache.hop.ui.hopgui.context.GuiContextHandler;
+import org.apache.hop.ui.hopgui.context.IGuiContextHandler;
+import org.apache.hop.ui.hopgui.delegates.HopGuiFileOpenedExtension;
+import org.apache.hop.ui.hopgui.file.HopFileTypeBase;
+import org.apache.hop.ui.hopgui.file.HopFileTypePlugin;
+import org.apache.hop.ui.hopgui.file.IHopFileType;
+import org.apache.hop.ui.hopgui.file.IHopFileTypeHandler;
+import org.apache.hop.ui.hopgui.perspective.TabItemHandler;
+import org.apache.hop.ui.hopgui.perspective.dataorch.HopDataOrchestrationPerspective;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+@HopFileTypePlugin(
+    id = "HopFile-Pipeline-Plugin",
+    description = "The pipeline file information for the Hop GUI",
+    image = "ui/images/pipeline.svg")
+public class HopPipelineFileType<T extends PipelineMeta> extends HopFileTypeBase
+    implements IHopFileType {
+
+  public static final Class<?> PKG = HopPipelineFileType.class; // i18n
+  public static final String PIPELINE_FILE_TYPE_DESCRIPTION = "Pipeline";
+
+  public HopPipelineFileType() {
+    // Do nothing
+  }
+
+  @Override
+  public String getName() {
+    return PIPELINE_FILE_TYPE_DESCRIPTION;
+  }
+
+  @Override
+  public String getDefaultFileExtension() {
+    return ".hpl";
+  }
+
+  @Override
+  public String[] getFilterExtensions() {
+    return new String[] {"*.hpl"};
+  }
+
+  @Override
+  public String[] getFilterNames() {
+    return new String[] {"Pipelines"};
+  }
+
+  @Override
+  public Properties getCapabilities() {
+    Properties capabilities = new Properties();
+    capabilities.setProperty(IHopFileType.CAPABILITY_NEW, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_CLOSE, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_START, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_STOP, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_SAVE, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_SAVE_AS, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_EXPORT_TO_SVG, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_PAUSE, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_PREVIEW, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_DEBUG, "true");
+
+    capabilities.setProperty(IHopFileType.CAPABILITY_SELECT, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_COPY, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_PASTE, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_CUT, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_DELETE, "true");
+
+    capabilities.setProperty(IHopFileType.CAPABILITY_SNAP_TO_GRID, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_ALIGN_LEFT, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_ALIGN_RIGHT, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_ALIGN_TOP, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_ALIGN_BOTTOM, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_DISTRIBUTE_HORIZONTAL, "true");
+    capabilities.setProperty(IHopFileType.CAPABILITY_DISTRIBUTE_VERTICAL, "true");
+
+    capabilities.setProperty(IHopFileType.CAPABILITY_FILE_HISTORY, "true");
+
+    return capabilities;
+  }
+
+  @Override
+  public IHopFileTypeHandler openFile(HopGui hopGui, String filename, IVariables variables)
+      throws HopException {
+    try {
+      // This file is opened in the data orchestration perspective
+      //
+      HopDataOrchestrationPerspective perspective = HopGui.getDataOrchestrationPerspective();
+      perspective.activate();
+
+      // Normalize the filename into a relative path...
+      //
+      HopGuiFileOpenedExtension ext = new HopGuiFileOpenedExtension(null, variables, filename);
+      ExtensionPointHandler.callExtensionPoint(
+          LogChannel.UI, variables, HopGuiExtensionPoint.HopGuiFileOpenedDialog.id, ext);
+      filename = variables.resolve(ext.filename);
+
+      // See if the same pipeline isn't already open.
+      // Other file types we might allow to open more than once but not pipelines for now.
+      //
+      TabItemHandler tabItemHandlerWithFilename =
+          perspective.findTabItemHandlerWithFilename(filename);
+      if (tabItemHandlerWithFilename != null) {
+        // Same file so we can simply switch to it.
+        // This will prevent confusion.
+        //
+        perspective.switchToTab(tabItemHandlerWithFilename);
+        return tabItemHandlerWithFilename.getTypeHandler();
+      }
+
+      // Load the pipeline
+      //
+      PipelineMeta pipelineMeta =
+          new PipelineMeta(filename, hopGui.getMetadataProvider(), variables);
+
+      // Pass the MetaStore for reference lookups
+      //
+      pipelineMeta.setMetadataProvider(hopGui.getMetadataProvider());
+
+      // Show it in the perspective
+      //
+      IHopFileTypeHandler typeHandler = perspective.addPipeline(hopGui, pipelineMeta, this);
+
+      // Keep track of open...
+      //
+      AuditManager.registerEvent(HopNamespace.getNamespace(), "file", filename, "open");
+
+      // Inform those that want to know about it that we loaded a pipeline
+      //
+      ExtensionPointHandler.callExtensionPoint(
+          hopGui.getLog(), variables, HopExtensionPoint.PipelineAfterOpen.id, pipelineMeta);
+
+      return typeHandler;
+    } catch (Exception e) {
+      throw new HopException("Error opening pipeline file '" + filename + "'", e);
+    }
+  }
+
+  @Override
+  public IHopFileTypeHandler newFile(HopGui hopGui, IVariables parentVariableSpace)
+      throws HopException {
+    try {
+      // This file is created in the data orchestration perspective
+      //
+      HopDataOrchestrationPerspective perspective = HopGui.getDataOrchestrationPerspective();
+      perspective.activate();
+
+      // Create the empty pipeline
+      //
+      PipelineMeta pipelineMeta = new PipelineMeta();
+      pipelineMeta.setName(BaseMessages.getString(PKG, "HopPipelineFileType.New.Text"));
+
+      // Pass the MetaStore for reference lookups
+      //
+      pipelineMeta.setMetadataProvider(hopGui.getMetadataProvider());
+
+      // Show it in the perspective
+      //
+      return perspective.addPipeline(hopGui, pipelineMeta, this);
+    } catch (Exception e) {
+      throw new HopException("Error creating new pipeline", e);
+    }
+  }
+
+  @Override
+  public boolean isHandledBy(String filename, boolean checkContent) throws HopException {
+    try {
+      if (checkContent) {
+        Document document = XmlHandler.loadXmlFile(filename);
+        Node pipelineNode = XmlHandler.getSubNode(document, PipelineMeta.XML_TAG);
+        return pipelineNode != null;
+      } else {
+        return super.isHandledBy(filename, checkContent);
+      }
+    } catch (Exception e) {
+      throw new HopException("Unable to verify file handling of file '" + filename + "'", e);
+    }
+  }
+
+  @Override
+  public boolean supportsFile(IHasFilename metaObject) {
+    return metaObject instanceof PipelineMeta;
+  }
+
+  public static final String ACTION_ID_NEW_PIPELINE = "NewPipeline";
+
+  @Override
+  public List<IGuiContextHandler> getContextHandlers() {
+
+    HopGui hopGui = HopGui.getInstance();
+
+    List<IGuiContextHandler> handlers = new ArrayList<>();
+
+    GuiAction newAction =
+        new GuiAction(
+            ACTION_ID_NEW_PIPELINE,
+            GuiActionType.Create,
+            BaseMessages.getString(PKG, "HopPipelineFileType.GuiAction.Pipeline.Name"),
+            BaseMessages.getString(PKG, "HopPipelineFileType.GuiAction.Pipeline.Tooltip"),
+            "ui/images/pipeline.svg",
+            (shiftClicked, controlClicked, parameters) -> {
+              try {
+                HopPipelineFileType.this.newFile(hopGui, hopGui.getVariables());
+              } catch (Exception e) {
+                new ErrorDialog(
+                    hopGui.getShell(),
+                    BaseMessages.getString(
+                        PKG, "HopPipelineFileType.ErrorDialog.PipelineDrawing.Header"),
+                    BaseMessages.getString(
+                        PKG, "HopPipelineFileType.ErrorDialog.PipelineDrawing.Message"),
+                    e);
+              }
+            });
+    newAction.setCategory("File");
+    newAction.setCategoryOrder("1");
+
+    handlers.add(new GuiContextHandler(ACTION_ID_NEW_PIPELINE, Arrays.asList(newAction)));
+    return handlers;
+  }
+
+  @Override
+  public String getFileTypeImage() {
+    return "ui/images/pipeline.svg";
+  }
+}

@@ -1,0 +1,363 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hop.core;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Date;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.hop.core.exception.HopFileException;
+import org.apache.hop.core.row.value.ValueMetaDate;
+import org.apache.hop.core.row.value.ValueMetaString;
+import org.apache.hop.core.vfs.HopVfs;
+import org.apache.hop.core.xml.XmlHandler;
+import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.metadata.api.IEnumHasCodeAndDescription;
+import org.w3c.dom.Node;
+
+/**
+ * This is a result file: a file as a result of the execution of a action, a pipeline transform,
+ * etc.
+ */
+public class ResultFile implements Cloneable {
+  private static final Class<?> PKG = Const.class;
+
+  public static final int FILE_TYPE_GENERAL = 0;
+  public static final int FILE_TYPE_LOG = 1;
+  public static final int FILE_TYPE_ERRORLINE = 2;
+  public static final int FILE_TYPE_ERROR = 3;
+  public static final int FILE_TYPE_WARNING = 4;
+  private static final String CONST_PARENT_ORIGIN = "parentorigin";
+  private static final String CONST_ORIGIN = "origin";
+  private static final String CONST_COMMENT = "comment";
+  private static final String CONST_TIMESTAMP = "timestamp";
+
+  public static final String[] fileTypeCode = {"GENERAL", "LOG", "ERRORLINE", "ERROR", "WARNING"};
+
+  public static final String[] fileTypeDesc = {
+    BaseMessages.getString(PKG, "ResultFile.FileType.General"),
+    BaseMessages.getString(PKG, "ResultFile.FileType.Log"),
+    BaseMessages.getString(PKG, "ResultFile.FileType.ErrorLine"),
+    BaseMessages.getString(PKG, "ResultFile.FileType.Error"),
+    BaseMessages.getString(PKG, "ResultFile.FileType.Warning")
+  };
+  private static final String XML_TAG = "result-file";
+
+  @JsonIgnore private int type;
+  @JsonIgnore private FileObject file;
+  private String originParent;
+  private String origin;
+  private String comment;
+  private Date timestamp;
+
+  /**
+   * Construct a new result file
+   *
+   * @param type The type of file : FILE_TYPE_GENERAL, ...
+   * @param file The file to use
+   * @param originParent The pipeline or workflow that has generated this result file
+   * @param origin The transform or action that has generated this result file
+   */
+  public ResultFile(int type, FileObject file, String originParent, String origin) {
+    this.type = type;
+    this.file = file;
+    this.originParent = originParent;
+    this.origin = origin;
+    this.timestamp = new Date();
+  }
+
+  @Override
+  public String toString() {
+    return file.toString()
+        + " - "
+        + getTypeDesc()
+        + " - "
+        + XmlHandler.date2string(timestamp)
+        + (origin == null ? "" : " - " + origin)
+        + (originParent == null ? "" : " - " + originParent);
+  }
+
+  @Override
+  protected ResultFile clone() throws CloneNotSupportedException {
+    return (ResultFile) super.clone();
+  }
+
+  /**
+   * @return Returns the comment.
+   */
+  public String getComment() {
+    return comment;
+  }
+
+  /**
+   * @param comment The comment to set.
+   */
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  /**
+   * @return Returns the file.
+   */
+  public FileObject getFile() {
+    return file;
+  }
+
+  /**
+   * @param file The file to set.
+   */
+  public void setFile(FileObject file) {
+    this.file = file;
+  }
+
+  /**
+   * @return Returns the origin : the transform or action that generated this result file
+   */
+  public String getOrigin() {
+    return origin;
+  }
+
+  /**
+   * @param origin The origin to set : the transform or action that generated this result file
+   */
+  public void setOrigin(String origin) {
+    this.origin = origin;
+  }
+
+  /**
+   * @return Returns the originParent : the pipeline or workflow that generated this result file
+   */
+  public String getOriginParent() {
+    return originParent;
+  }
+
+  /**
+   * @param originParent The originParent to set : the pipeline or workflow that generated this
+   *     result file
+   */
+  public void setOriginParent(String originParent) {
+    this.originParent = originParent;
+  }
+
+  /**
+   * @return Returns the type.
+   */
+  public int getType() {
+    return type;
+  }
+
+  /**
+   * @param type The type to set.
+   */
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  /**
+   * @return The description of this result files type.
+   */
+  @JsonIgnore
+  public String getTypeDesc() {
+    return fileTypeDesc[type];
+  }
+
+  @JsonInclude
+  public String getTypeCode() {
+    return fileTypeCode[type];
+  }
+
+  /**
+   * Search for the result file type, looking in both the descriptions (i18n depending) and the
+   * codes
+   *
+   * @param typeString the type string to search for
+   * @return the result file type
+   */
+  public static final int getType(String typeString) {
+    int idx = Const.indexOfString(typeString, fileTypeDesc);
+    if (idx >= 0) {
+      return idx;
+    }
+    idx = Const.indexOfString(typeString, fileTypeCode);
+    if (idx >= 0) {
+      return idx;
+    }
+
+    return FILE_TYPE_GENERAL;
+  }
+
+  /**
+   * @param fileType the result file type
+   * @return the result file type code
+   */
+  public static final String getTypeCode(int fileType) {
+    return fileTypeCode[fileType];
+  }
+
+  /**
+   * @param fileType the result file type
+   * @return the result file type description
+   */
+  public static final String getTypeDesc(int fileType) {
+    return fileTypeDesc[fileType];
+  }
+
+  public static final String[] getAllTypeDesc() {
+    return fileTypeDesc;
+  }
+
+  /**
+   * @return Returns the timestamp.
+   */
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  public Date getTimestamp() {
+    return timestamp;
+  }
+
+  /**
+   * @param timestamp The timestamp to set.
+   */
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  /**
+   * @return an output Row for this Result File object.
+   */
+  @JsonIgnore
+  public RowMetaAndData getRow() {
+    RowMetaAndData row = new RowMetaAndData();
+
+    // First the type
+    row.addValue(new ValueMetaString("type"), getTypeDesc());
+
+    // The filename
+    row.addValue(new ValueMetaString("filename"), file.getName().getBaseName());
+
+    // The path
+    row.addValue(new ValueMetaString("path"), file.getName().getURI());
+
+    // The origin parent
+    row.addValue(new ValueMetaString(CONST_PARENT_ORIGIN), originParent);
+
+    // The origin
+    row.addValue(new ValueMetaString(CONST_ORIGIN), origin);
+
+    // The comment
+    row.addValue(new ValueMetaString(CONST_COMMENT), comment);
+
+    // The timestamp
+    row.addValue(new ValueMetaDate(CONST_TIMESTAMP), timestamp);
+
+    return row;
+  }
+
+  @JsonIgnore
+  public String getXml() {
+
+    return XmlHandler.openTag(XML_TAG)
+        + XmlHandler.addTagValue("type", getTypeCode())
+        + XmlHandler.addTagValue("file", file.getName().toString())
+        + XmlHandler.addTagValue(CONST_PARENT_ORIGIN, originParent)
+        + XmlHandler.addTagValue(CONST_ORIGIN, origin)
+        + XmlHandler.addTagValue(CONST_COMMENT, comment)
+        + XmlHandler.addTagValue(CONST_TIMESTAMP, timestamp)
+        + XmlHandler.closeTag(XML_TAG);
+  }
+
+  public ResultFile(Node node) throws HopFileException {
+    try {
+      type = getType(XmlHandler.getTagValue(node, "type"));
+      file = HopVfs.getFileObject(XmlHandler.getTagValue(node, "file"));
+      originParent = XmlHandler.getTagValue(node, CONST_PARENT_ORIGIN);
+      origin = XmlHandler.getTagValue(node, CONST_ORIGIN);
+      comment = XmlHandler.getTagValue(node, CONST_COMMENT);
+      timestamp = XmlHandler.stringToDate(XmlHandler.getTagValue(node, CONST_TIMESTAMP));
+    } catch (Exception e) {
+      throw new HopFileException(e);
+    }
+  }
+
+  public enum FileType implements IEnumHasCodeAndDescription {
+    GENERAL(
+        "GENERAL", BaseMessages.getString(PKG, "ResultFile.FileType.General"), FILE_TYPE_GENERAL),
+    LOG("LOG", BaseMessages.getString(PKG, "ResultFile.FileType.Log"), FILE_TYPE_LOG),
+    ERROR_LINE(
+        "ERRORLINE",
+        BaseMessages.getString(PKG, "ResultFile.FileType.ErrorLine"),
+        FILE_TYPE_ERRORLINE),
+    ERROR("ERROR", BaseMessages.getString(PKG, "ResultFile.FileType.Error"), FILE_TYPE_ERROR),
+    WARNING(
+        "WARNING", BaseMessages.getString(PKG, "ResultFile.FileType.Warning"), FILE_TYPE_WARNING),
+    ;
+    private final String code;
+    private final String description;
+    private final int type;
+
+    FileType(String code, String description, int type) {
+      this.code = code;
+      this.description = description;
+      this.type = type;
+    }
+
+    public static String[] getDescriptions() {
+      String[] descriptions = new String[values().length];
+      for (int i = 0; i < descriptions.length; i++) {
+        descriptions[i] = values()[i].getDescription();
+      }
+      return descriptions;
+    }
+
+    public static FileType lookupDescription(String description) {
+      for (FileType value : values()) {
+        if (value.getDescription().equals(description)) {
+          return value;
+        }
+      }
+      return GENERAL;
+    }
+
+    /**
+     * Gets code
+     *
+     * @return value of code
+     */
+    public String getCode() {
+      return code;
+    }
+
+    /**
+     * Gets description
+     *
+     * @return value of description
+     */
+    public String getDescription() {
+      return description;
+    }
+
+    /**
+     * Gets type
+     *
+     * @return value of type
+     */
+    public int getType() {
+      return type;
+    }
+  }
+}

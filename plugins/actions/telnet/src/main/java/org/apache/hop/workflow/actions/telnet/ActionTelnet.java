@@ -1,0 +1,186 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hop.workflow.actions.telnet;
+
+import java.util.List;
+import org.apache.hop.core.Const;
+import org.apache.hop.core.ICheckResult;
+import org.apache.hop.core.Result;
+import org.apache.hop.core.annotations.Action;
+import org.apache.hop.core.util.SocketUtil;
+import org.apache.hop.core.util.Utils;
+import org.apache.hop.core.variables.IVariables;
+import org.apache.hop.i18n.BaseMessages;
+import org.apache.hop.metadata.api.HopMetadataProperty;
+import org.apache.hop.metadata.api.IHopMetadataProvider;
+import org.apache.hop.resource.ResourceEntry;
+import org.apache.hop.resource.ResourceEntry.ResourceType;
+import org.apache.hop.resource.ResourceReference;
+import org.apache.hop.workflow.WorkflowMeta;
+import org.apache.hop.workflow.action.ActionBase;
+import org.apache.hop.workflow.action.IAction;
+import org.apache.hop.workflow.action.validator.ActionValidatorUtils;
+import org.apache.hop.workflow.action.validator.AndValidator;
+
+/** This defines a Telnet action. */
+@Action(
+    id = "TELNET",
+    name = "i18n::ActionTelnet.Name",
+    description = "i18n::ActionTelnet.Description",
+    image = "Telnet.svg",
+    categoryDescription = "i18n:org.apache.hop.workflow:ActionCategory.Category.Utility",
+    keywords = "i18n::ActionTelnet.keyword",
+    documentationUrl = "/workflow/actions/telnet.html")
+public class ActionTelnet extends ActionBase implements Cloneable, IAction {
+  private static final Class<?> PKG = ActionTelnet.class;
+
+  @HopMetadataProperty(key = "hostname")
+  private String hostname;
+
+  @HopMetadataProperty(key = "port")
+  private String port;
+
+  @HopMetadataProperty(key = "timeout")
+  private String timeout;
+
+  public static final int DEFAULT_TIME_OUT = 3000;
+  public static final int DEFAULT_PORT = 23;
+
+  public ActionTelnet(String n) {
+    super(n, "");
+    hostname = null;
+    port = String.valueOf(DEFAULT_PORT);
+    timeout = String.valueOf(DEFAULT_TIME_OUT);
+  }
+
+  public ActionTelnet() {
+    this("");
+  }
+
+  @Override
+  public Object clone() {
+    ActionTelnet je = (ActionTelnet) super.clone();
+    return je;
+  }
+
+  public String getPort() {
+    return port;
+  }
+
+  public String getRealPort() {
+    return resolve(getPort());
+  }
+
+  public void setPort(String port) {
+    this.port = port;
+  }
+
+  public void setHostname(String hostname) {
+    this.hostname = hostname;
+  }
+
+  public String getHostname() {
+    return hostname;
+  }
+
+  public String getRealHostname() {
+    return resolve(getHostname());
+  }
+
+  public String getTimeout() {
+    return timeout;
+  }
+
+  public String getRealTimeOut() {
+    return resolve(getTimeout());
+  }
+
+  public void setTimeout(String timeout) {
+    this.timeout = timeout;
+  }
+
+  @Override
+  public Result execute(Result previousResult, int nr) {
+
+    Result result = previousResult;
+
+    result.setNrErrors(1);
+    result.setResult(false);
+
+    String hostname = getRealHostname();
+    int port = Const.toInt(getRealPort(), DEFAULT_PORT);
+    int timeoutInt = Const.toInt(getRealTimeOut(), -1);
+
+    if (Utils.isEmpty(hostname)) {
+      // No Host was specified
+      logError(BaseMessages.getString(PKG, "ActionTelnet.SpecifyHost.Label"));
+      return result;
+    }
+
+    try {
+
+      SocketUtil.connectToHost(hostname, port, timeoutInt);
+
+      if (isDetailed()) {
+        logDetailed(BaseMessages.getString(PKG, "ActionTelnet.OK.Label", hostname, port));
+      }
+
+      result.setNrErrors(0);
+      result.setResult(true);
+
+    } catch (Exception ex) {
+      logError(
+          BaseMessages.getString(PKG, "ActionTelnet.NOK.Label", hostname, String.valueOf(port)));
+      logError(BaseMessages.getString(PKG, "ActionTelnet.Error.Label") + ex.getMessage());
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean isEvaluation() {
+    return true;
+  }
+
+  @Override
+  public List<ResourceReference> getResourceDependencies(
+      IVariables variables, WorkflowMeta workflowMeta) {
+    List<ResourceReference> references = super.getResourceDependencies(variables, workflowMeta);
+    if (!Utils.isEmpty(hostname)) {
+      String realServername = resolve(hostname);
+      ResourceReference reference = new ResourceReference(this);
+      reference.getEntries().add(new ResourceEntry(realServername, ResourceType.SERVER));
+      references.add(reference);
+    }
+    return references;
+  }
+
+  @Override
+  public void check(
+      List<ICheckResult> remarks,
+      WorkflowMeta workflowMeta,
+      IVariables variables,
+      IHopMetadataProvider metadataProvider) {
+    ActionValidatorUtils.andValidator()
+        .validate(
+            this,
+            "hostname",
+            remarks,
+            AndValidator.putValidators(ActionValidatorUtils.notBlankValidator()));
+  }
+}
