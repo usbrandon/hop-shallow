@@ -1,6 +1,0 @@
-{
-  "dynamicallyDefined": true,
-  "numberOfPartitions": "${NR_PARTITIONS}",
-  "name": "dynamic3",
-  "partitionIDs": []
-}

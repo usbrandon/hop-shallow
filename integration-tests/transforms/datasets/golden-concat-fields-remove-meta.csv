@@ -1,3 +1,0 @@
-Position,Fieldname,Comments,Type,Length,Precision,Origin
-1,id,,Integer,15,0,files/customers-100.txt
-2,fields,,String,500,-1,concat with comma
